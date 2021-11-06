@@ -73,7 +73,9 @@ struct ActiveInvestment{
     uint256 totalAmountLended;
     uint256 totalAmountLendedWithReturn;
     uint256 monthlyAmount;
-    uint256 currentAmountReceived;
+    uint256 amountLeftToReceive;
+    // Duration left in months 
+    uint256 durationMonthsLeft;
     uint256 lastPaymentDate;
     bool softDeleted;
     bool payedBack;
@@ -143,13 +145,16 @@ contract Lending {
             uint256 monthlyPayback = borrowingRequest.amount * 4000 / borrowingRequest.durationMonths;
             
             // Multiply with 10000 to get a int number which represents a float with precision of 2. Divide monthly payback by income difference and by 2.
-            uint256 calcRate = (10000 * monthlyPayback/incomeDifference/2);
+            uint256 calculatedRate = (10000 * monthlyPayback/incomeDifference/2);
             
             // Only allow to borrow money when interest rate between 2.5% and 10%
-            require (calcRate >= 250 && calcRate <= 1000, "Not allowed to borrow money with current parameters");
+            require (calculatedRate >= 250 && calculatedRate <= 1000, "Not allowed to borrow money with current parameters");
+            
+            // Multiply requested amount with 10000 + calculatedRate (fixed precision float) and divide by total duration and by 10000 to get monthly amount in WEI
+            uint256 monthlyAmount = (borrowingRequest.amount * (10000 + calculatedRate)) / borrowingRequest.durationMonths / 10000;
             
             
-            BorrowingConditions memory conditions = BorrowingConditions(borrowingRequest.amount * calcRate , calcRate);
+            BorrowingConditions memory conditions = BorrowingConditions(monthlyAmount, calculatedRate);
             borrowingConditions[msg.sender] = conditions;
             return borrowingConditions[msg.sender];
         }
@@ -278,7 +283,7 @@ contract Lending {
     */
     function investMoney(address borrowTo) payable public returns (bool success){
          //TODO: CHECK NOT TOO MUCH MONEY -> RETURN MONEY BACK
-
+        
         // TODO: Change sturct
         ActiveInvestment memory activeInvestment = ActiveInvestment(
             borrowTo,
@@ -287,6 +292,8 @@ contract Lending {
             msg.value * (1 + activeBorrowings[borrowTo].interestRate) / activeBorrowings[borrowTo].totalDurationMonths,
             0,0,false,false);
         activeInvestments[msg.sender].push(activeInvestment);
+        
+        // TODO: Check, if same investor twice
         activeBorrowings[borrowTo].investorAddresses.push(msg.sender);
         activeBorrowings[borrowTo].investorAmounts.push(msg.value);
         activeBorrowings[borrowTo].totalInvestorAmount += msg.value;
