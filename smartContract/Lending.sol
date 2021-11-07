@@ -58,8 +58,11 @@ struct ActiveBorrowing {
     // Flag to check if instance is deleted
     bool deleted;
     
-    // Flag to check if instance is fully payed back
+    // Flag to check if money was withdrawn
     bool payedOut;
+    
+    // Flag to check if instance is fully payed back
+    bool payedBack;
     
     // Date of withdrawal (start of repayment period)
     uint256 withdrawalDate;
@@ -68,17 +71,40 @@ struct ActiveBorrowing {
     uint256 mostRecentRepaymentDate;
 }
 
-struct ActiveInvestment{
+// Defines the parameters of an investment contract betweed a borrower and an investors.
+struct Investment{
+    // Address of the borrower
     address borrowerAddress;
+    
+    // Total amount in WEI lended to the borrowe
     uint256 totalAmountLended;
-    uint256 totalAmountLendedWithReturn;
+    
+    // Total amount in WEI lended including the added interest
+    uint256 totalAmountLendedWithInterest;
+    
+    // Monthly amount in WEI to be payed back
     uint256 monthlyAmount;
-    uint256 amountLeftToReceive;
+    
+     // Interest Rate on whole amount
+    uint256 interestRate;
+    
+    // Amount already payed back
+    uint256 amountPayedBack;
+    
     // Duration left in months 
     uint256 durationMonthsLeft;
-    uint256 lastPaymentDate;
-    bool softDeleted;
+    
+    // Flag to check if instance is deleted
+    bool deleted;
+    
+    // Flag to check if instance is fully payed back
     bool payedBack;
+    
+    // Date of investment start
+    uint256 startDate;
+    
+    // Date of most recent repayment
+    uint256 mostRecentRepaymentDate;
 }
 
 contract Lending {
@@ -88,10 +114,13 @@ contract Lending {
     mapping(address => BorrowingRequest) borrowingRequests;
     mapping(address => BorrowingConditions) borrowingConditions;
     mapping(address => ActiveBorrowing) activeBorrowings;
-    mapping(address => ActiveInvestment[]) activeInvestments;
+    mapping(address => Investment[]) investments;
     
     address[] activeBorrowingAddresses;
     
+    /*  Serves as internal representation of block.timestamp. Since we want to test out contract, 
+        we need to be able to advance time. In a real world example, we would always use block.timestamp
+    */
     uint256 currentTime;
     
     constructor() {
@@ -184,13 +213,14 @@ contract Lending {
         ActiveBorrowing memory activeBorrowing = ActiveBorrowing(
             borrowingRequests[msg.sender].amount, 
             borrowingRequests[msg.sender].durationMonths,
-            borrowingRequests[msg.sender].amount, 
+            borrowingRequests[msg.sender].amount * (10000 + borrowingConditions[msg.sender].interestRate) / 10000, 
             borrowingRequests[msg.sender].durationMonths, 
             borrowingConditions[msg.sender].monthlyAmount, 
             borrowingConditions[msg.sender].interestRate,
             investorAdresses, 
             investorAmounts,
             0,
+            false,
             false,
             false,
             0,
@@ -212,15 +242,24 @@ contract Lending {
         // TOOD: GAS ATTACK check
         
         activeBorrowings[msg.sender].payedOut = true;
+        activeBorrowings[msg.sender].withdrawalDate = currentTime;
         addr.transfer(activeBorrowings[msg.sender].borrowedAmount);
         
-        // TODO: Create LenderStruct
+        // For every investor find the according investment and set the start date
+         for (uint i = 0; i < activeBorrowings[msg.sender].investorAddresses.length; i++){
+             for (uint j = 0; j < investments[activeBorrowings[msg.sender].investorAddresses[i]].length; j++){
+                 if (investments[activeBorrowings[msg.sender].investorAddresses[i]][j].borrowerAddress == msg.sender){
+                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].startDate = currentTime;
+                     break;
+                 }
+             }
+         }
         
         
         // Remove address from activeBorrowingAddresses, since it does not need funding anymore
-        for (uint j = 0; j < activeBorrowingAddresses.length; j++) {
-            if(activeBorrowingAddresses[j] == msg.sender) {
-                activeBorrowingAddresses[j] = activeBorrowingAddresses[activeBorrowingAddresses.length-1];
+        for (uint k = 0; k < activeBorrowingAddresses.length; k++) {
+            if(activeBorrowingAddresses[k] == msg.sender) {
+                activeBorrowingAddresses[k] = activeBorrowingAddresses[activeBorrowingAddresses.length-1];
                 activeBorrowingAddresses.pop();
                 break;
             }
@@ -240,7 +279,64 @@ contract Lending {
         }
     }
     
-
+   /*
+        Allows the user to check wheter paying back debt is possible
+        returns: wheter paying back is possible
+    */
+    function isPayBackPossible() public view returns (bool){
+        require (activeBorrowings[msg.sender].borrowedAmount > 0 && activeBorrowings[msg.sender].payedOut , "No active borrowing agreement");
+        require (activeBorrowings[msg.sender].amountLeftToRepay > 0 || !activeBorrowings[msg.sender].payedBack , "Already payed back");
+        
+        // TODO: better formula (could also be that somebody did not pay for 2 month.. then he should not have to wait 21 days)
+        if (activeBorrowings[msg.sender].mostRecentRepaymentDate != 0 && activeBorrowings[msg.sender].mostRecentRepaymentDate + 21 days < currentTime) {
+            return true;
+        } else if (activeBorrowings[msg.sender].mostRecentRepaymentDate == 0 && activeBorrowings[msg.sender].withdrawalDate + 21 days < currentTime) {
+            return true;   
+        }
+        else {
+            return false;
+        }
+    }
+    
+    /*
+        Allows the owner of the contract to provide additional liquidity
+        returns: providing liquidity successful or not
+    */
+    function packBackBorrower() payable public returns (bool success){
+        require (isPayBackPossible(), "Payback not possible");
+        require (msg.value == activeBorrowings[msg.sender].monthlyAmount, "Not the correct amount to pay back");
+        
+        
+         // For every investor find the according investment and set the start date
+         for (uint i = 0; i < activeBorrowings[msg.sender].investorAddresses.length; i++){
+             for (uint j = 0; j < investments[activeBorrowings[msg.sender].investorAddresses[i]].length; j++){
+                 if (investments[activeBorrowings[msg.sender].investorAddresses[i]][j].borrowerAddress == msg.sender){
+                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPayedBack += investments[activeBorrowings[msg.sender].investorAddresses[i]][j].monthlyAmount;
+                     // TODO: Check with months left
+                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].durationMonthsLeft -= 1;
+                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].mostRecentRepaymentDate = currentTime;
+                     address payable addr = payable(activeBorrowings[msg.sender].investorAddresses[i]);
+                     addr.transfer(investments[activeBorrowings[msg.sender].investorAddresses[i]][j].monthlyAmount);
+                     if(investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPayedBack == investments[activeBorrowings[msg.sender].investorAddresses[i]][j].totalAmountLendedWithInterest){
+                         investments[activeBorrowings[msg.sender].investorAddresses[i]][j].payedBack = true;
+                     }
+                     break;
+                 }
+             }
+         }
+         
+        // TODO: Check with months left
+        activeBorrowings[msg.sender].amountLeftToRepay -= msg.value;
+        activeBorrowings[msg.sender].durationMonthsLeft -= 1;
+        activeBorrowings[msg.sender].mostRecentRepaymentDate = currentTime;
+        
+        if(activeBorrowings[msg.sender].amountLeftToRepay == 0) {
+            activeBorrowings[msg.sender].payedBack = true;
+        }
+        return true;
+    }
+    
+    
     
     /*
         Allows user to retrieve active borrowing conditions
@@ -259,11 +355,11 @@ contract Lending {
     }
     
     /*
-        Allows user to retrieve active investments
-        returns: list of active investments
+        Allows user to retrieve investments
+        returns: list of investments
     */
-    function getActiveInvestments() public view returns (ActiveInvestment[] memory)  {
-        return activeInvestments[msg.sender];
+    function getInvestments() public view returns (Investment[] memory)  {
+        return investments[msg.sender];
     }
     
     
@@ -284,14 +380,23 @@ contract Lending {
     function investMoney(address borrowTo) payable public returns (bool success){
          //TODO: CHECK NOT TOO MUCH MONEY -> RETURN MONEY BACK
         
-        // TODO: Change sturct
-        ActiveInvestment memory activeInvestment = ActiveInvestment(
+        // Investor rate (fixed precision float) minus 1% (-100)
+        uint256 investorRate = (10000 + activeBorrowings[borrowTo].interestRate - 100);
+        Investment memory investment = Investment(
             borrowTo,
             msg.value,
-            msg.value * (1 + activeBorrowings[borrowTo].interestRate),
-            msg.value * (1 + activeBorrowings[borrowTo].interestRate) / activeBorrowings[borrowTo].totalDurationMonths,
-            0,0,false,false);
-        activeInvestments[msg.sender].push(activeInvestment);
+            investorRate * msg.value / 10000,
+            investorRate * msg.value / 10000 / activeBorrowings[borrowTo].totalDurationMonths,
+            activeBorrowings[borrowTo].interestRate - 100,
+            0,
+            activeBorrowings[borrowTo].totalDurationMonths,
+            false,
+            false,
+            0,
+            0);
+            
+        // TODO: Check, if same investor twice
+        investments[msg.sender].push(investment);
         
         // TODO: Check, if same investor twice
         activeBorrowings[borrowTo].investorAddresses.push(msg.sender);
@@ -314,6 +419,22 @@ contract Lending {
     */
     function getContractLiquidity() public view returns (uint256)  {
         return address(this).balance;
+    }
+    
+    /*
+        Returns contract internal time
+        returns: timestamp
+    */
+    function getContractTime() public view returns (uint256)  {
+        return currentTime;
+    }
+    
+    /*
+        set contract internal time (only for testing purposes)
+        returns: timestamp
+    */
+    function setContractTime(uint256 timestamp) public  {
+        currentTime = timestamp;
     }
     
 }
