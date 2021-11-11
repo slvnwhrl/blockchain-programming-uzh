@@ -1,0 +1,25 @@
+<button (click)="test2()">test2</button>
+<button (click)="test3()">test3</button>
+<div class="container" style="background-color: #303030">
+  <div class="row" *ngIf="error">
+    <div class="col-12">
+      <div>{{error}}</div>
+    </div>
+  </div>
+  <div class="row" *ngIf="loading">
+    <div class="col-12">
+      <mat-spinner class="mx-auto"></mat-spinner>
+    </div>
+  </div>
+  <div class="row" *ngIf="isConnected && !loading && step == 0">
+    <div class="col-12">
+      <app-request ></app-request>
+    </div>
+  </div>
+  <div class="row" *ngIf="!isConnected">
+    <div class="col-12">
+      <h1>It seems like you are not connected to your wallet. Please connect using Meta Mask.</h1>
+      <button mat-flat-button color="primary" (click)="connectManually()">Connect manually</button>
+    </div>
+  </div>
+</div>
