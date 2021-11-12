@@ -59,10 +59,10 @@ struct ActiveBorrowing {
     bool deleted;
     
     // Flag to check if money was withdrawn
-    bool payedOut;
+    bool paidOut;
     
-    // Flag to check if instance is fully payed back
-    bool payedBack;
+    // Flag to check if instance is fully paid back
+    bool paidBack;
     
     // Date of withdrawal (start of repayment period)
     uint256 withdrawalDate;
@@ -82,14 +82,14 @@ struct Investment{
     // Total amount in WEI lended including the added interest
     uint256 totalAmountLendedWithInterest;
     
-    // Monthly amount in WEI to be payed back
+    // Monthly amount in WEI to be paid back
     uint256 monthlyAmount;
     
      // Interest Rate on whole amount
     uint256 interestRate;
     
-    // Amount already payed back
-    uint256 amountPayedBack;
+    // Amount already paid back
+    uint256 amountPaidBack;
     
     // Duration left in months 
     uint256 durationMonthsLeft;
@@ -97,8 +97,8 @@ struct Investment{
     // Flag to check if instance is deleted
     bool deleted;
     
-    // Flag to check if instance is fully payed back
-    bool payedBack;
+    // Flag to check if instance is fully paid back
+    bool paidBack;
     
     // Date of investment start
     uint256 startDate;
@@ -232,16 +232,16 @@ contract Lending {
     }
     
     /*
-        Allows user to withdraw the requested money if the project is already funded and not payed out yet.
+        Allows user to withdraw the requested money if the project is already funded and not paid out yet.
     */
     function withdrawMoney() public {
-        require (activeBorrowings[msg.sender].borrowedAmount == activeBorrowings[msg.sender].totalInvestorAmount && !activeBorrowings[msg.sender].payedOut, "No allowed to withdraw money");
+        require (activeBorrowings[msg.sender].borrowedAmount == activeBorrowings[msg.sender].totalInvestorAmount && !activeBorrowings[msg.sender].paidOut, "No allowed to withdraw money");
         require (address(this).balance >= activeBorrowings[msg.sender].borrowedAmount, "Not enough liquidity");
         address payable addr = payable(msg.sender);
         
         // TOOD: GAS ATTACK check
         
-        activeBorrowings[msg.sender].payedOut = true;
+        activeBorrowings[msg.sender].paidOut = true;
         activeBorrowings[msg.sender].withdrawalDate = currentTime;
         addr.transfer(activeBorrowings[msg.sender].borrowedAmount);
         
@@ -271,7 +271,7 @@ contract Lending {
         returns: wheter withdrawal of money is possible
     */
     function isWithdrawMoneyPossible() public view returns (bool){
-        require (activeBorrowings[msg.sender].borrowedAmount > 0 && !activeBorrowings[msg.sender].payedOut , "No active borrowing agreement");
+        require (activeBorrowings[msg.sender].borrowedAmount > 0 && !activeBorrowings[msg.sender].paidOut , "No active borrowing agreement");
         if (activeBorrowings[msg.sender].borrowedAmount == activeBorrowings[msg.sender].totalInvestorAmount) {
             return true;
         } else {
@@ -284,8 +284,8 @@ contract Lending {
         returns: wheter paying back is possible
     */
     function isPayBackPossible() public view returns (bool){
-        require (activeBorrowings[msg.sender].borrowedAmount > 0 && activeBorrowings[msg.sender].payedOut , "No active borrowing agreement");
-        require (activeBorrowings[msg.sender].amountLeftToRepay > 0 || !activeBorrowings[msg.sender].payedBack , "Already payed back");
+        require (activeBorrowings[msg.sender].borrowedAmount > 0 && activeBorrowings[msg.sender].paidOut , "No active borrowing agreement");
+        require (activeBorrowings[msg.sender].amountLeftToRepay > 0 || !activeBorrowings[msg.sender].paidBack , "Already paid back");
         
         // TODO: better formula (could also be that somebody did not pay for 2 month.. then he should not have to wait 21 days)
         if (activeBorrowings[msg.sender].mostRecentRepaymentDate != 0 && activeBorrowings[msg.sender].mostRecentRepaymentDate + 21 days < currentTime) {
@@ -311,14 +311,14 @@ contract Lending {
          for (uint i = 0; i < activeBorrowings[msg.sender].investorAddresses.length; i++){
              for (uint j = 0; j < investments[activeBorrowings[msg.sender].investorAddresses[i]].length; j++){
                  if (investments[activeBorrowings[msg.sender].investorAddresses[i]][j].borrowerAddress == msg.sender){
-                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPayedBack += investments[activeBorrowings[msg.sender].investorAddresses[i]][j].monthlyAmount;
+                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPaidBack += investments[activeBorrowings[msg.sender].investorAddresses[i]][j].monthlyAmount;
                      // TODO: Check with months left
                      investments[activeBorrowings[msg.sender].investorAddresses[i]][j].durationMonthsLeft -= 1;
                      investments[activeBorrowings[msg.sender].investorAddresses[i]][j].mostRecentRepaymentDate = currentTime;
                      address payable addr = payable(activeBorrowings[msg.sender].investorAddresses[i]);
                      addr.transfer(investments[activeBorrowings[msg.sender].investorAddresses[i]][j].monthlyAmount);
-                     if(investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPayedBack == investments[activeBorrowings[msg.sender].investorAddresses[i]][j].totalAmountLendedWithInterest){
-                         investments[activeBorrowings[msg.sender].investorAddresses[i]][j].payedBack = true;
+                     if(investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPaidBack == investments[activeBorrowings[msg.sender].investorAddresses[i]][j].totalAmountLendedWithInterest){
+                         investments[activeBorrowings[msg.sender].investorAddresses[i]][j].paidBack = true;
                      }
                      break;
                  }
@@ -331,7 +331,7 @@ contract Lending {
         activeBorrowings[msg.sender].mostRecentRepaymentDate = currentTime;
         
         if(activeBorrowings[msg.sender].amountLeftToRepay == 0) {
-            activeBorrowings[msg.sender].payedBack = true;
+            activeBorrowings[msg.sender].paidBack = true;
         }
         return true;
     }
