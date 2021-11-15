@@ -394,28 +394,48 @@ contract Lending {
          else {
              investedAmount = msg.value;
          }
-        
+    
         // Investor rate (fixed precision float) minus 1% (-100)
         uint256 investorRate = (10000 + activeBorrowings[borrowTo].interestRate - 100);
-        Investment memory investment = Investment(
-            borrowTo,
-            investedAmount,
-            investorRate * investedAmount / 10000,
-            investorRate * investedAmount / 10000 / activeBorrowings[borrowTo].totalDurationMonths,
-            activeBorrowings[borrowTo].interestRate - 100,
-            0,
-            activeBorrowings[borrowTo].totalDurationMonths,
-            false,
-            false,
-            0,
-            0);
-            
-        // TODO: Check, if same investor twice
-        investments[msg.sender].push(investment);
         
-        // TODO: Check, if same investor twice
-        activeBorrowings[borrowTo].investorAddresses.push(msg.sender);
-        activeBorrowings[borrowTo].investorAmounts.push(investedAmount);
+        bool invFound;
+        // Already invested
+        for (uint i = 0; i < investments[msg.sender].length; i++) {
+            if (investments[msg.sender][i].borrowerAddress == borrowTo) {
+                investments[msg.sender][i].totalAmountLended += investedAmount;
+                investments[msg.sender][i].totalAmountLendedWithInterest += investorRate * investedAmount / 10000;
+                investments[msg.sender][i].monthlyAmount += investorRate * investedAmount / 10000 / activeBorrowings[borrowTo].totalDurationMonths;
+                
+                for (uint j = 0; j < activeBorrowings[borrowTo].investorAddresses.length; j++) {
+                    if (activeBorrowings[borrowTo].investorAddresses[j] == msg.sender) {
+                        activeBorrowings[borrowTo].investorAmounts[j] += investedAmount;
+                    }
+                }
+                
+                invFound = true;
+                break;
+            }
+        }
+        // Not yet invested
+        if(!invFound) {
+            Investment memory investment = Investment(
+                borrowTo,
+                investedAmount,
+                investorRate * investedAmount / 10000,
+                investorRate * investedAmount / 10000 / activeBorrowings[borrowTo].totalDurationMonths,
+                activeBorrowings[borrowTo].interestRate - 100,
+                0,
+                activeBorrowings[borrowTo].totalDurationMonths,
+                false,
+                false,
+                0,
+                0);
+                
+                investments[msg.sender].push(investment);
+        
+                activeBorrowings[borrowTo].investorAddresses.push(msg.sender);
+                activeBorrowings[borrowTo].investorAmounts.push(investedAmount);
+        }
         activeBorrowings[borrowTo].totalInvestorAmount += investedAmount;
         
         // Return unused money
