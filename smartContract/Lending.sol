@@ -381,15 +381,24 @@ contract Lending {
         returns: wheter lending wa successful
     */
     function investMoney(address borrowTo) payable public returns (bool success){
-         //TODO: CHECK NOT TOO MUCH MONEY -> RETURN MONEY BACK
+         // Make sure investment is not too small and not too big
+         require(msg.value > 0, "No investment provided");
+         require(activeBorrowings[borrowTo].borrowedAmount > activeBorrowings[borrowTo].totalInvestorAmount, "Already enough money lended");
+         uint256 investedAmount;
+         if (activeBorrowings[borrowTo].borrowedAmount - activeBorrowings[borrowTo].totalInvestorAmount < msg.value) {
+             investedAmount = activeBorrowings[borrowTo].borrowedAmount - activeBorrowings[borrowTo].totalInvestorAmount;
+         }
+         else {
+             investedAmount = msg.value;
+         }
         
         // Investor rate (fixed precision float) minus 1% (-100)
         uint256 investorRate = (10000 + activeBorrowings[borrowTo].interestRate - 100);
         Investment memory investment = Investment(
             borrowTo,
-            msg.value,
-            investorRate * msg.value / 10000,
-            investorRate * msg.value / 10000 / activeBorrowings[borrowTo].totalDurationMonths,
+            investedAmount,
+            investorRate * investedAmount / 10000,
+            investorRate * investedAmount / 10000 / activeBorrowings[borrowTo].totalDurationMonths,
             activeBorrowings[borrowTo].interestRate - 100,
             0,
             activeBorrowings[borrowTo].totalDurationMonths,
@@ -403,8 +412,15 @@ contract Lending {
         
         // TODO: Check, if same investor twice
         activeBorrowings[borrowTo].investorAddresses.push(msg.sender);
-        activeBorrowings[borrowTo].investorAmounts.push(msg.value);
-        activeBorrowings[borrowTo].totalInvestorAmount += msg.value;
+        activeBorrowings[borrowTo].investorAmounts.push(investedAmount);
+        activeBorrowings[borrowTo].totalInvestorAmount += investedAmount;
+        
+        // Return unused money
+        if (investedAmount < msg.value) {
+            address payable addr = payable(msg.sender);
+            addr.transfer(msg.value - investedAmount);
+        }
+        
         return true;
     }
     
