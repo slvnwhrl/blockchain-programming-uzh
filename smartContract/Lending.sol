@@ -386,7 +386,7 @@ contract Lending {
     function investMoney(address borrowTo) payable public returns (bool success){
          // Make sure investment is not too small and not too big
          require(msg.value > 0, "No investment provided");
-         require(activeBorrowings[borrowTo].borrowedAmount > activeBorrowings[borrowTo].totalInvestorAmount, "Already enough money lended");
+         require(activeBorrowings[borrowTo].borrowedAmount >= activeBorrowings[borrowTo].totalInvestorAmount, "Already enough money lended");
          uint256 investedAmount;
          if (activeBorrowings[borrowTo].borrowedAmount - activeBorrowings[borrowTo].totalInvestorAmount < msg.value) {
              investedAmount = activeBorrowings[borrowTo].borrowedAmount - activeBorrowings[borrowTo].totalInvestorAmount;
