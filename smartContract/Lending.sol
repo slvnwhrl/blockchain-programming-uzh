@@ -8,7 +8,7 @@ struct BorrowingRequest {
     uint256 amount;
     
     // The duration in month the user wants to pay back the borrowed amount
-    uint256 durationMonths;
+    uint8 durationMonths;
     
     // The income of the user in CHF
     uint256 income;
@@ -32,13 +32,13 @@ struct ActiveBorrowing {
     uint256 borrowedAmount;
     
     // Total duration of repayment in months
-    uint256 totalDurationMonths;
+    uint8 totalDurationMonths;
     
     // Amount left to repay
     uint256 amountLeftToRepay;
     
     // Duration left in months 
-    uint256 durationMonthsLeft;
+    uint8 durationMonthsLeft;
     
     // Amount to pay back monthly
     uint256 monthlyAmount;
@@ -136,7 +136,10 @@ contract Lending {
         uint256 income: the income of the user in CHF
         uint256 expenses: the total expenses of the user in CHF
     */
-    function requestBorrowing(uint256 amount, uint256 durationMonths, uint256 income, uint256 expenses) public {
+    function requestBorrowing(uint256 amount, uint8 durationMonths, uint256 income, uint256 expenses) public {
+        require(durationMonths <= 120, "Duration cannot be longer than 10 years");
+        require(income > expenses, "Income must be bigger than expenses");
+        
         BorrowingRequest memory borrowingRequest = BorrowingRequest(amount, durationMonths, income, expenses);
         
         // Reset calculated borrowing conditions on new borrowing request
