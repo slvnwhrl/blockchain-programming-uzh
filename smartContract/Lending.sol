@@ -287,11 +287,14 @@ contract Lending {
         require (activeBorrowings[msg.sender].borrowedAmount > 0 && activeBorrowings[msg.sender].paidOut , "No active borrowing agreement");
         require (activeBorrowings[msg.sender].amountLeftToRepay > 0 || !activeBorrowings[msg.sender].paidBack , "Already paid back");
         
-        // TODO: better formula (could also be that somebody did not pay for 2 month.. then he should not have to wait 21 days)
         if (activeBorrowings[msg.sender].mostRecentRepaymentDate != 0 && activeBorrowings[msg.sender].mostRecentRepaymentDate + 21 days < currentTime) {
             return true;
         } else if (activeBorrowings[msg.sender].mostRecentRepaymentDate == 0 && activeBorrowings[msg.sender].withdrawalDate + 21 days < currentTime) {
-            return true;   
+            return true;
+        // special case: payments in residue > 1
+        } else if ((activeBorrowings[msg.sender].totalDurationMonths - activeBorrowings[msg.sender].durationMonthsLeft) < 
+        (currentTime - activeBorrowings[msg.sender].withdrawalDate)/60/60/24/30) {
+            return true;
         }
         else {
             return false;
