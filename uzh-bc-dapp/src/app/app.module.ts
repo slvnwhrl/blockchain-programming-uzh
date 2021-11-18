@@ -13,6 +13,10 @@ import { InvestorComponent } from './view/investor/investor.component';
 import { HomeComponent } from './view/home/home.component';
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import { RequestComponent } from './view/borrower/request/request.component';
+import {NgxMaskModule} from "ngx-mask";
+import {MatSliderModule} from "@angular/material/slider";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @NgModule({
   declarations: [
@@ -22,16 +26,20 @@ import { RequestComponent } from './view/borrower/request/request.component';
     HomeComponent,
     RequestComponent
   ],
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        NgbModule,
-        BrowserAnimationsModule,
-        ReactiveFormsModule,
-        MatInputModule,
-        MatButtonModule,
-        MatProgressSpinnerModule
-    ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    NgbModule,
+    BrowserAnimationsModule,
+    ReactiveFormsModule,
+    MatInputModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    NgxMaskModule.forRoot(),
+    MatSliderModule,
+    MatFormFieldModule,
+    FontAwesomeModule
+  ],
   providers: [],
   bootstrap: [AppComponent]
 })
