@@ -1,31 +1,58 @@
-<div class="form-wrapper">
+<div class="form-wrapper" [formGroup]="requestForm">
   <div class="row">
     <div class="col-12">
       <h1>Request your credit</h1>
     </div>
     <div class="col-6">
+        <mat-label>Amount</mat-label> <br>
+        <mat-slider formControlName="amount" class="w-100-icon" min="0.1" max="20" step="0.1" thumbLabel="true"></mat-slider>
+        <span class="slider-val float-right"><fa-icon [icon]="['fab', 'ethereum']" class="mr-1"></fa-icon> {{requestForm.get('amount')?.value}} ({{(requestForm.get('amount')?.value * ethChf) | mask: 'separator.2': '\''}} CHF)</span>
+    </div>
+    <div class="col-6">
+      <mat-label>Duration (months)</mat-label> <br>
+      <mat-slider formControlName="duration" class="w-100-icon" min="1" max="72" step="1" thumbLabel="true"></mat-slider>
+      <span class="slider-val float-right">{{requestForm.get('duration')?.value}} {{requestForm.get('duration')?.value == 1 ? 'month' : 'months'}}</span>
+    </div>
+    <div class="col-6">
       <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Amount</mat-label>
-        <input matInput placeholder="test">
+        <mat-label>Income (per month)</mat-label>
+        <input matInput placeholder="5'000" [mask]="'separator.2'" thousandSeparator="'" class="text-right" formControlName="income">
+        <span matSuffix class="suffix-fix ml-1">CHF</span>
       </mat-form-field>
     </div>
     <div class="col-6">
       <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Duration</mat-label>
-        <input matInput placeholder="test">
+        <mat-label>Expenses (per month)</mat-label>
+        <input matInput placeholder="2'000" [mask]="'separator.2'" thousandSeparator="'" class="text-right" formControlName="expenses">
+        <span matSuffix class="suffix-fix ml-1">CHF</span>
       </mat-form-field>
     </div>
     <div class="col-6">
       <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Income</mat-label>
-        <input matInput placeholder="test">
+        <mat-label>First Name</mat-label>
+        <input matInput placeholder="2'000" formControlName="fname" required>
       </mat-form-field>
     </div>
     <div class="col-6">
       <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Expenses</mat-label>
-        <input matInput placeholder="test">
+        <mat-label>Last Name</mat-label>
+        <input matInput placeholder="2'000" formControlName="lname" required>
       </mat-form-field>
+    </div>
+    <div class="col-6">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Street</mat-label>
+        <input matInput placeholder="2'000" formControlName="street" required>
+      </mat-form-field>
+    </div>
+    <div class="col-6">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>City</mat-label>
+        <input matInput placeholder="2'000" formControlName="city" required>
+      </mat-form-field>
+    </div>
+    <div class="col-12">
+      <button mat-flat-button color="primary" class="button-lg cc-font float-right" (click)="requestQuote()" [disabled]="!requestForm.valid">Request Quote</button>
     </div>
   </div>
 
