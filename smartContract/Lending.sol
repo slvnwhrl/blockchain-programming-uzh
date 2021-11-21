@@ -69,6 +69,9 @@ struct ActiveBorrowing {
     
     // Date of most recent repayment
     uint256 mostRecentRepaymentDate;
+    
+    // Date of completing the funding
+    uint256 fundingCompletedDate;
 }
 
 // Defines the parameters of an investment contract betweed a borrower and an investors.
@@ -230,6 +233,7 @@ contract Lending {
             false,
             false,
             0,
+            0,
             0);
         activeBorrowings[msg.sender] = activeBorrowing;
         
@@ -241,7 +245,7 @@ contract Lending {
         Allows user to withdraw the requested money if the project is already funded and not paid out yet.
     */
     function withdrawMoney() public {
-        require (activeBorrowings[msg.sender].borrowedAmount == activeBorrowings[msg.sender].totalInvestorAmount && !activeBorrowings[msg.sender].paidOut, "No allowed to withdraw money");
+        require (activeBorrowings[msg.sender].borrowedAmount == activeBorrowings[msg.sender].totalInvestorAmount && !activeBorrowings[msg.sender].paidOut, "Not allowed to withdraw money");
         require (address(this).balance >= activeBorrowings[msg.sender].borrowedAmount, "Not enough liquidity");
         address payable addr = payable(msg.sender);
         
@@ -441,6 +445,10 @@ contract Lending {
         }
         activeBorrowings[borrowTo].totalInvestorAmount += investedAmount;
         
+        if (activeBorrowings[borrowTo].totalInvestorAmount == activeBorrowings[borrowTo].borrowedAmount) {
+            activeBorrowings[borrowTo].fundingCompletedDate = currentTime;
+        }
+        
         // Return unused money
         if (investedAmount < msg.value) {
             address payable addr = payable(msg.sender);
@@ -448,6 +456,49 @@ contract Lending {
         }
         
         return true;
+    }
+    
+    /*
+    Allows a user to check if investment in funded (but not paid out) project can be withdrawn.
+    returns: bool
+    */
+    function isWithdrawInvestementPossible(address borrowTo) public view returns (bool) {
+        if (investments[msg.sender].length == 0) {
+            return false;
+        }
+        for (uint i = 0; i < investments[msg.sender].length; i++) {
+            if (investments[msg.sender][i].borrowerAddress == borrowTo) {
+                break;
+            }
+            if (i == investments[msg.sender].length-1 && investments[msg.sender][i].borrowerAddress != borrowTo) {
+                return false;
+            }
+        }
+        if (activeBorrowings[borrowTo].borrowedAmount == activeBorrowings[borrowTo].totalInvestorAmount && activeBorrowings[borrowTo].paidOut == false &&
+        (currentTime - activeBorrowings[borrowTo].fundingCompletedDate)/60/60/24 >= 30) {
+            return true;
+        }
+        return false;
+    }
+    
+    /*
+    Withdraw investment from a funded (but not paid out) project. All investors will receive their investment back.
+    */
+    function withdrawInvestment(address borrowTo) public {
+        require(isWithdrawInvestementPossible(borrowTo), "Investment can only be withdrawn, if a borrower doesn't withdraw money from a fully funded project for at least 30 days.");
+        
+        address payable addr;
+        for(uint i = 0; i < activeBorrowings[borrowTo].investorAddresses.length; i++) {
+            addr = payable(activeBorrowings[borrowTo].investorAddresses[i]);
+            addr.transfer(activeBorrowings[borrowTo].investorAmounts[i]);
+            for (uint j = 0; j < investments[activeBorrowings[borrowTo].investorAddresses[i]].length; j++) {
+                if (investments[activeBorrowings[borrowTo].investorAddresses[i]][j].borrowerAddress == borrowTo) {
+                    investments[activeBorrowings[borrowTo].investorAddresses[i]][j].deleted = true;
+                    break;
+                } 
+            }
+        }
+        activeBorrowings[borrowTo].deleted = true;
     }
     
     /*
