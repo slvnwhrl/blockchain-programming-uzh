@@ -141,6 +141,7 @@ contract Lending {
         returns: borrowing conditions for the request
     */
     function requestBorrowing(uint256 amount, uint8 durationMonths, uint256 income, uint256 expenses) public returns (BorrowingConditions memory) {
+        require(canRequestBorrowing(msg.sender), "Cannot receive funding for more than one active project");
         require(durationMonths <= 120, "Duration cannot be longer than 10 years");
         require(income > expenses, "Income must be bigger than expenses");
         
@@ -155,6 +156,19 @@ contract Lending {
         return calculateBorrowingConditions();
     }
     
+    /*
+    Allows to check if a user can request a borrowing. Can only request a borrowing if there are no open borrowings.
+    returns: bool
+    */
+    function canRequestBorrowing(address borrowTo) private view returns (bool) {
+        if (activeBorrowings[borrowTo].borrowedAmount > 0) {
+            if (activeBorrowings[borrowTo].deleted == false && (activeBorrowings[borrowTo].paidOut == false || activeBorrowings[borrowTo].amountLeftToRepay > 0)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
     
     /*
         Returns the current borrowing request of the user
