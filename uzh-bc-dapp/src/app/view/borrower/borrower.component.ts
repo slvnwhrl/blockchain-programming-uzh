@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {SmartContractService} from "../../service/smart-contract.service";
+import {BorrowingRequest} from "../../model/models";
 
 @Component({
   selector: 'app-borrower',
@@ -15,15 +16,16 @@ export class BorrowerComponent implements OnInit {
 
   constructor(private scService: SmartContractService) {
   }
+
   ngOnInit(): void {
     // TODO: Proper network check
     this.scService.error$.subscribe(value => {
       this.error = value;
-      if(value == ''){
+      if (value == '') {
         this.checkStep();
       }
     })
-    if(!this.scService.isConnected()){
+    if (!this.scService.isConnected()) {
       this.scService.connectAccount().then(value => {
         this.isConnected = true
         this.checkStep();
@@ -35,12 +37,12 @@ export class BorrowerComponent implements OnInit {
 
   }
 
-  checkStep(): void{
+  checkStep(): void {
     this.loading = true;
     this.scService.getBorrowingRequest().then(value => {
       console.log(value);
       console.log(value.amount === 0 && value.durationMonths === 0 && value.expenses === 0 && value.income === 0);
-      if(value.amount === 0 && value.durationMonths === 0 && value.expenses === 0 && value.income === 0){
+      if (value.amount === 0 && value.durationMonths === 0 && value.expenses === 0 && value.income === 0) {
         this.step = 0;
         this.loading = false;
       } else {
@@ -52,7 +54,7 @@ export class BorrowerComponent implements OnInit {
 
 
   test2() {
-    console.log(this.scService.requestBorrowing(100,12,500,100));
+    console.log(this.scService.requestBorrowing(100, 12, 500, 100));
 
   }
 
@@ -65,5 +67,9 @@ export class BorrowerComponent implements OnInit {
     this.scService.connectAccount().then(value => {
       this.isConnected = true
     });
+  }
+
+  requestQuote($event: BorrowingRequest) {
+    this.scService.requestBorrowing($event.amount, $event.durationMonths, $event.income, $event.expenses);
   }
 }
