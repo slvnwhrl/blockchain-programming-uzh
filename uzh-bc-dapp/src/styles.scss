@@ -9,3 +9,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; background-
   font-family: 'Comfortaa', cursive !important;
   font-weight: 300 !important;
 }
+
+.suffix-fix{
+  position: relative;
+  top: -4px;
+}
+
+.w-100-icon {
+  width: calc(100% - 220px);
+}

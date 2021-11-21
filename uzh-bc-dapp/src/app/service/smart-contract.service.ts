@@ -86,7 +86,7 @@ export class SmartContractService {
     const create = await this.smartContract
       .methods.getBorrowingRequest()
       .call({ from: this.accounts[0] });
-    return  new BorrowingRequest(parseInt(create[0]), parseInt(create[1]), parseInt(create[2]), parseInt(create[3]));
+    return new BorrowingRequest(parseInt(create[0]), parseInt(create[1]), parseInt(create[2]), parseInt(create[3]));
   }
 
   private async createProviderAndWeb3() {

@@ -13,7 +13,7 @@
   </div>
   <div class="row" *ngIf="isConnected && !loading && step == 0">
     <div class="col-12">
-      <app-request ></app-request>
+      <app-request (quoteRequested)="requestQuote($event)"></app-request>
     </div>
   </div>
   <div class="row" *ngIf="!isConnected">
