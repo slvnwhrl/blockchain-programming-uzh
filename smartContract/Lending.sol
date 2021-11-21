@@ -26,7 +26,7 @@ struct BorrowingConditions {
     uint256 interestRate;
 }
 
-// Defines the parameters of an active borrowing contract betweed a borrower and one or more investors.
+// Defines the parameters of an active borrowing contract between a borrower and one or more investors.
 struct ActiveBorrowing {
     // Borrowed amount in WEI
     uint256 borrowedAmount;
@@ -135,8 +135,9 @@ contract Lending {
         uint256 durationMonths: the duration in month the user wants to pay back the borrowed amount
         uint256 income: the income of the user in CHF
         uint256 expenses: the total expenses of the user in CHF
+        returns: borrowing conditions for the request
     */
-    function requestBorrowing(uint256 amount, uint8 durationMonths, uint256 income, uint256 expenses) public {
+    function requestBorrowing(uint256 amount, uint8 durationMonths, uint256 income, uint256 expenses) public returns (BorrowingConditions memory) {
         require(durationMonths <= 120, "Duration cannot be longer than 10 years");
         require(income > expenses, "Income must be bigger than expenses");
         
@@ -147,6 +148,8 @@ contract Lending {
         borrowingConditions[msg.sender].interestRate = 0;
         
         borrowingRequests[msg.sender] = borrowingRequest;
+        
+        return calculateBorrowingConditions();
     }
     
     
@@ -162,7 +165,7 @@ contract Lending {
         Calculates borrowing conditions based on borrowing request of the user
         returns: borrowing conditions
     */
-    function calculateBorrowingConditions() public returns (BorrowingConditions memory)  {
+    function calculateBorrowingConditions() private returns (BorrowingConditions memory) {
         require (borrowingRequests[msg.sender].amount > 0, "No open borrowing request");
         
         if (borrowingConditions[msg.sender].monthlyAmount > 0) {
