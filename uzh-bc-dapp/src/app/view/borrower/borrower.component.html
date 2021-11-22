@@ -16,6 +16,11 @@
       <app-request (quoteRequested)="requestQuote($event)"></app-request>
     </div>
   </div>
+  <div class="row" *ngIf="isConnected && !loading && step == 1">
+    <div class="col-12">
+      <app-rates ></app-rates>
+    </div>
+  </div>
   <div class="row" *ngIf="!isConnected">
     <div class="col-12">
       <h1>It seems like you are not connected to your wallet. Please connect using Meta Mask.</h1>

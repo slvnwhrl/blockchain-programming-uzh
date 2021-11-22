@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  dapp_address : '0x5B7a7C6aF29680eE560E9c376137c4b27061F5c1',
+  dapp_address : '0xc8A0868935b1af46baF4468F61627947F57b737e',
   chainId: 1337,
   currentETHCHF: 4000
 };

@@ -18,3 +18,30 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; background-
 .w-100-icon {
   width: calc(100% - 220px);
 }
+
+.invest-popover{
+  background-color: #303030;
+  border-color: lightgray;
+}
+
+.invest-popover .arrow::after {
+  border-left-color: lightgray;
+}
+
+.dp-popover{
+  background-color: #303030;
+  border-color: lightgray;
+}
+
+.dp-popover .arrow::after {
+  border-bottom-color: transparent !important;
+}
+
+
+.c-primary{
+  color: #c2185b;
+}
+
+.pointer{
+  cursor: pointer;
+}

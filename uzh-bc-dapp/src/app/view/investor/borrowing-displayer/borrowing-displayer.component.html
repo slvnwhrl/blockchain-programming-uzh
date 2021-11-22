@@ -1,0 +1,49 @@
+<div class="w-100 border p-3 mb-2">
+  <div class="container">
+    <div class="row mb-2">
+      <div class="col-4">
+        <div class="text-right w-100 inv-label">Yield</div>
+        <div class="text-right w-100 inv-value c-primary">{{(borrowing.interestRate / 100) - 1| number: '.2-2'}}%</div>
+      </div>
+      <div class="col-4">
+        <div class="text-right w-100 inv-label">Total Amount</div>
+        <div class="text-right w-100 inv-value">
+          <fa-icon [icon]="['fab', 'ethereum']" class="eth-icon"></fa-icon> {{(borrowing.borrowedAmount / 1e18)}} ETH</div>
+      </div>
+      <div class="col-4">
+        <div class="text-right w-100 inv-label">Duration (months)</div>
+        <div class="text-right w-100 inv-value">{{(borrowing.totalDurationMonths)}}</div>
+      </div>
+    </div>
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="text-right w-100 inv-label mb-1">Risk ({{risk | number: '.2-2'}}%)</div>
+        <div class="progress-risk w-100">
+          <div class="progress-risk-bar" [style]="'width: ' + risk + '%;'"></div>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="text-right w-100 inv-label mb-1">Funding ({{fundingRate | number: '.2-2'}}%)</div>
+        <mat-progress-bar mode="determinate" [value]="fundingRate"></mat-progress-bar>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+
+        <button mat-flat-button color="primary" class="float-right"
+                [ngbPopover]="investPopover" [autoClose]="'outside'" triggers="manual" #p="ngbPopover" popoverClass="invest-popover" placement="left" (click)="p.open()" [disabled]="borrowing.totalInvestorAmount == borrowing.borrowedAmount">Invest</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #investPopover>
+  <div class="template-div">
+    <mat-slider class="w-100" min="0.1" step="0.05" [max]="maxInvestment" [formControl]="investmentAmount" thumbLabel="true"></mat-slider>
+  </div>
+  <div class="template-div">
+    <button mat-flat-button (click)="invest()" class="w-100" color="primary">Invest <fa-icon [icon]="['fab', 'ethereum']" class="mx-1"></fa-icon>{{investmentAmount.value}} ETH</button>
+  </div>
+</ng-template>

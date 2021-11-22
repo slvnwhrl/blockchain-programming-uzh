@@ -1,1 +1,18 @@
-<p>investor works!</p>
+<div class="container">
+  <div class="row">
+    <div class="col-12 mt-4">
+      <h1 class="cc-font">Investment Opportunities</h1>
+    </div>
+    <div *ngFor="let borrowing of activeBorrowings" class="col-6">
+      <app-borrowing-displayer [borrowing]="borrowing" (invested)="invested()"></app-borrowing-displayer>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12 mt-4">
+      <h1 class="cc-font">Previous Investments</h1>
+    </div>
+    <div *ngFor="let inv of investments" class="col-6">
+      <app-investment-displayer [investment]="inv" ></app-investment-displayer>
+    </div>
+  </div>
+</div>

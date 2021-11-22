@@ -17,6 +17,22 @@
       </li>
     </ul>
   </div>
-</nav>
 
+  <fa-icon [icon]="['fas', 'clock']"  class="mr-1 pointer" ngbTooltip="Set contract time to now" (click)="setContractNow()"></fa-icon>
+  <fa-icon [icon]="['fas', 'calendar-alt']"  class="mr-4 pointer" [ngbTooltip]="'Set contract time to specific date'" (click)="p.open()"></fa-icon>
+  <div [ngbPopover]="setDatePopover" [autoClose]="'outside'" triggers="manual" #p="ngbPopover" popoverClass="dp-popover" placement="bottom-right"></div>
+  <span class="mr-1">Internal Contract Date: {{contractTimestamp | date:'dd.MM.yyyy'}}</span>
+  <fa-icon [icon]="['fas', 'redo']" (click)="getContractTime()" class="mr-1 pointer" ngbTooltip="Reload contract time"></fa-icon>
+
+
+</nav>
 <router-outlet></router-outlet>
+
+<ng-template #setDatePopover>
+  <mat-form-field appearance="fill">
+    <mat-label>Choose a date</mat-label>
+    <input matInput [matDatepicker]="picker" (dateChange)="setContractDate($event)">
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+</ng-template>
