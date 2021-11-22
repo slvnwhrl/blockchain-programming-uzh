@@ -8,7 +8,7 @@ struct BorrowingRequest {
     uint256 amount;
     
     // The duration in month the user wants to pay back the borrowed amount
-    uint256 durationMonths;
+    uint8 durationMonths;
     
     // The income of the user in CHF
     uint256 income;
@@ -26,19 +26,19 @@ struct BorrowingConditions {
     uint256 interestRate;
 }
 
-// Defines the parameters of an active borrowing contract betweed a borrower and one or more investors.
+// Defines the parameters of an active borrowing contract between a borrower and one or more investors.
 struct ActiveBorrowing {
     // Borrowed amount in WEI
     uint256 borrowedAmount;
     
     // Total duration of repayment in months
-    uint256 totalDurationMonths;
+    uint8 totalDurationMonths;
     
     // Amount left to repay
     uint256 amountLeftToRepay;
     
     // Duration left in months 
-    uint256 durationMonthsLeft;
+    uint8 durationMonthsLeft;
     
     // Amount to pay back monthly
     uint256 monthlyAmount;
@@ -59,16 +59,19 @@ struct ActiveBorrowing {
     bool deleted;
     
     // Flag to check if money was withdrawn
-    bool payedOut;
+    bool paidOut;
     
-    // Flag to check if instance is fully payed back
-    bool payedBack;
+    // Flag to check if instance is fully paid back
+    bool paidBack;
     
     // Date of withdrawal (start of repayment period)
     uint256 withdrawalDate;
     
     // Date of most recent repayment
     uint256 mostRecentRepaymentDate;
+    
+    // Date of completing the funding
+    uint256 fundingCompletedDate;
 }
 
 // Defines the parameters of an investment contract betweed a borrower and an investors.
@@ -82,14 +85,14 @@ struct Investment{
     // Total amount in WEI lended including the added interest
     uint256 totalAmountLendedWithInterest;
     
-    // Monthly amount in WEI to be payed back
+    // Monthly amount in WEI to be paid back
     uint256 monthlyAmount;
     
      // Interest Rate on whole amount
     uint256 interestRate;
     
-    // Amount already payed back
-    uint256 amountPayedBack;
+    // Amount already paid back
+    uint256 amountPaidBack;
     
     // Duration left in months 
     uint256 durationMonthsLeft;
@@ -97,8 +100,8 @@ struct Investment{
     // Flag to check if instance is deleted
     bool deleted;
     
-    // Flag to check if instance is fully payed back
-    bool payedBack;
+    // Flag to check if instance is fully paid back
+    bool paidBack;
     
     // Date of investment start
     uint256 startDate;
@@ -135,8 +138,13 @@ contract Lending {
         uint256 durationMonths: the duration in month the user wants to pay back the borrowed amount
         uint256 income: the income of the user in CHF
         uint256 expenses: the total expenses of the user in CHF
+        returns: borrowing conditions for the request
     */
-    function requestBorrowing(uint256 amount, uint256 durationMonths, uint256 income, uint256 expenses) public {
+    function requestBorrowing(uint256 amount, uint8 durationMonths, uint256 income, uint256 expenses) public returns (BorrowingConditions memory) {
+        require(canRequestBorrowing(msg.sender), "Cannot receive funding for more than one active project");
+        require(durationMonths <= 120, "Duration cannot be longer than 10 years");
+        require(income > expenses, "Income must be bigger than expenses");
+        
         BorrowingRequest memory borrowingRequest = BorrowingRequest(amount, durationMonths, income, expenses);
         
         // Reset calculated borrowing conditions on new borrowing request
@@ -144,8 +152,23 @@ contract Lending {
         borrowingConditions[msg.sender].interestRate = 0;
         
         borrowingRequests[msg.sender] = borrowingRequest;
+        
+        return calculateBorrowingConditions();
     }
     
+    /*
+    Allows to check if a user can request a borrowing. Can only request a borrowing if there are no open borrowings.
+    returns: bool
+    */
+    function canRequestBorrowing(address borrowTo) private view returns (bool) {
+        if (activeBorrowings[borrowTo].borrowedAmount > 0) {
+            if (activeBorrowings[borrowTo].deleted == false && (activeBorrowings[borrowTo].paidOut == false || activeBorrowings[borrowTo].amountLeftToRepay > 0)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
     
     /*
         Returns the current borrowing request of the user
@@ -159,7 +182,7 @@ contract Lending {
         Calculates borrowing conditions based on borrowing request of the user
         returns: borrowing conditions
     */
-    function calculateBorrowingConditions() public returns (BorrowingConditions memory)  {
+    function calculateBorrowingConditions() private returns (BorrowingConditions memory) {
         require (borrowingRequests[msg.sender].amount > 0, "No open borrowing request");
         
         if (borrowingConditions[msg.sender].monthlyAmount > 0) {
@@ -224,6 +247,7 @@ contract Lending {
             false,
             false,
             0,
+            0,
             0);
         activeBorrowings[msg.sender] = activeBorrowing;
         
@@ -232,16 +256,16 @@ contract Lending {
     }
     
     /*
-        Allows user to withdraw the requested money if the project is already funded and not payed out yet.
+        Allows user to withdraw the requested money if the project is already funded and not paid out yet.
     */
     function withdrawMoney() public {
-        require (activeBorrowings[msg.sender].borrowedAmount == activeBorrowings[msg.sender].totalInvestorAmount && !activeBorrowings[msg.sender].payedOut, "No allowed to withdraw money");
+        require (activeBorrowings[msg.sender].borrowedAmount == activeBorrowings[msg.sender].totalInvestorAmount && !activeBorrowings[msg.sender].paidOut, "Not allowed to withdraw money");
         require (address(this).balance >= activeBorrowings[msg.sender].borrowedAmount, "Not enough liquidity");
         address payable addr = payable(msg.sender);
         
         // TOOD: GAS ATTACK check
         
-        activeBorrowings[msg.sender].payedOut = true;
+        activeBorrowings[msg.sender].paidOut = true;
         activeBorrowings[msg.sender].withdrawalDate = currentTime;
         addr.transfer(activeBorrowings[msg.sender].borrowedAmount);
         
@@ -271,7 +295,7 @@ contract Lending {
         returns: wheter withdrawal of money is possible
     */
     function isWithdrawMoneyPossible() public view returns (bool){
-        require (activeBorrowings[msg.sender].borrowedAmount > 0 && !activeBorrowings[msg.sender].payedOut , "No active borrowing agreement");
+        require (activeBorrowings[msg.sender].borrowedAmount > 0 && !activeBorrowings[msg.sender].paidOut , "No active borrowing agreement");
         if (activeBorrowings[msg.sender].borrowedAmount == activeBorrowings[msg.sender].totalInvestorAmount) {
             return true;
         } else {
@@ -284,14 +308,17 @@ contract Lending {
         returns: wheter paying back is possible
     */
     function isPayBackPossible() public view returns (bool){
-        require (activeBorrowings[msg.sender].borrowedAmount > 0 && activeBorrowings[msg.sender].payedOut , "No active borrowing agreement");
-        require (activeBorrowings[msg.sender].amountLeftToRepay > 0 || !activeBorrowings[msg.sender].payedBack , "Already payed back");
+        require (activeBorrowings[msg.sender].borrowedAmount > 0 && activeBorrowings[msg.sender].paidOut , "No active borrowing agreement");
+        require (activeBorrowings[msg.sender].amountLeftToRepay > 0 || !activeBorrowings[msg.sender].paidBack , "Already paid back");
         
-        // TODO: better formula (could also be that somebody did not pay for 2 month.. then he should not have to wait 21 days)
         if (activeBorrowings[msg.sender].mostRecentRepaymentDate != 0 && activeBorrowings[msg.sender].mostRecentRepaymentDate + 21 days < currentTime) {
             return true;
         } else if (activeBorrowings[msg.sender].mostRecentRepaymentDate == 0 && activeBorrowings[msg.sender].withdrawalDate + 21 days < currentTime) {
-            return true;   
+            return true;
+        // special case: payments in residue > 1
+        } else if ((activeBorrowings[msg.sender].totalDurationMonths - activeBorrowings[msg.sender].durationMonthsLeft) < 
+        (currentTime - activeBorrowings[msg.sender].withdrawalDate)/60/60/24/30) {
+            return true;
         }
         else {
             return false;
@@ -311,14 +338,14 @@ contract Lending {
          for (uint i = 0; i < activeBorrowings[msg.sender].investorAddresses.length; i++){
              for (uint j = 0; j < investments[activeBorrowings[msg.sender].investorAddresses[i]].length; j++){
                  if (investments[activeBorrowings[msg.sender].investorAddresses[i]][j].borrowerAddress == msg.sender){
-                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPayedBack += investments[activeBorrowings[msg.sender].investorAddresses[i]][j].monthlyAmount;
+                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPaidBack += investments[activeBorrowings[msg.sender].investorAddresses[i]][j].monthlyAmount;
                      // TODO: Check with months left
                      investments[activeBorrowings[msg.sender].investorAddresses[i]][j].durationMonthsLeft -= 1;
                      investments[activeBorrowings[msg.sender].investorAddresses[i]][j].mostRecentRepaymentDate = currentTime;
                      address payable addr = payable(activeBorrowings[msg.sender].investorAddresses[i]);
                      addr.transfer(investments[activeBorrowings[msg.sender].investorAddresses[i]][j].monthlyAmount);
-                     if(investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPayedBack == investments[activeBorrowings[msg.sender].investorAddresses[i]][j].totalAmountLendedWithInterest){
-                         investments[activeBorrowings[msg.sender].investorAddresses[i]][j].payedBack = true;
+                     if(investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPaidBack == investments[activeBorrowings[msg.sender].investorAddresses[i]][j].totalAmountLendedWithInterest){
+                         investments[activeBorrowings[msg.sender].investorAddresses[i]][j].paidBack = true;
                      }
                      break;
                  }
@@ -331,7 +358,7 @@ contract Lending {
         activeBorrowings[msg.sender].mostRecentRepaymentDate = currentTime;
         
         if(activeBorrowings[msg.sender].amountLeftToRepay == 0) {
-            activeBorrowings[msg.sender].payedBack = true;
+            activeBorrowings[msg.sender].paidBack = true;
         }
         return true;
     }
@@ -378,31 +405,114 @@ contract Lending {
         returns: wheter lending wa successful
     */
     function investMoney(address borrowTo) payable public returns (bool success){
-         //TODO: CHECK NOT TOO MUCH MONEY -> RETURN MONEY BACK
-        
+         // Make sure investment is not too small and not too big
+         require(msg.value > 0, "No investment provided");
+         require(activeBorrowings[borrowTo].borrowedAmount >= activeBorrowings[borrowTo].totalInvestorAmount, "Already enough money lended");
+         uint256 investedAmount;
+         if (activeBorrowings[borrowTo].borrowedAmount - activeBorrowings[borrowTo].totalInvestorAmount < msg.value) {
+             investedAmount = activeBorrowings[borrowTo].borrowedAmount - activeBorrowings[borrowTo].totalInvestorAmount;
+         }
+         else {
+             investedAmount = msg.value;
+         }
+    
         // Investor rate (fixed precision float) minus 1% (-100)
         uint256 investorRate = (10000 + activeBorrowings[borrowTo].interestRate - 100);
-        Investment memory investment = Investment(
-            borrowTo,
-            msg.value,
-            investorRate * msg.value / 10000,
-            investorRate * msg.value / 10000 / activeBorrowings[borrowTo].totalDurationMonths,
-            activeBorrowings[borrowTo].interestRate - 100,
-            0,
-            activeBorrowings[borrowTo].totalDurationMonths,
-            false,
-            false,
-            0,
-            0);
-            
-        // TODO: Check, if same investor twice
-        investments[msg.sender].push(investment);
         
-        // TODO: Check, if same investor twice
-        activeBorrowings[borrowTo].investorAddresses.push(msg.sender);
-        activeBorrowings[borrowTo].investorAmounts.push(msg.value);
-        activeBorrowings[borrowTo].totalInvestorAmount += msg.value;
+        bool invFound;
+        // Already invested
+        for (uint i = 0; i < investments[msg.sender].length; i++) {
+            if (investments[msg.sender][i].borrowerAddress == borrowTo) {
+                investments[msg.sender][i].totalAmountLended += investedAmount;
+                investments[msg.sender][i].totalAmountLendedWithInterest += investorRate * investedAmount / 10000;
+                investments[msg.sender][i].monthlyAmount += investorRate * investedAmount / 10000 / activeBorrowings[borrowTo].totalDurationMonths;
+                
+                for (uint j = 0; j < activeBorrowings[borrowTo].investorAddresses.length; j++) {
+                    if (activeBorrowings[borrowTo].investorAddresses[j] == msg.sender) {
+                        activeBorrowings[borrowTo].investorAmounts[j] += investedAmount;
+                    }
+                }
+                
+                invFound = true;
+                break;
+            }
+        }
+        // Not yet invested
+        if(!invFound) {
+            Investment memory investment = Investment(
+                borrowTo,
+                investedAmount,
+                investorRate * investedAmount / 10000,
+                investorRate * investedAmount / 10000 / activeBorrowings[borrowTo].totalDurationMonths,
+                activeBorrowings[borrowTo].interestRate - 100,
+                0,
+                activeBorrowings[borrowTo].totalDurationMonths,
+                false,
+                false,
+                0,
+                0);
+                
+                investments[msg.sender].push(investment);
+        
+                activeBorrowings[borrowTo].investorAddresses.push(msg.sender);
+                activeBorrowings[borrowTo].investorAmounts.push(investedAmount);
+        }
+        activeBorrowings[borrowTo].totalInvestorAmount += investedAmount;
+        
+        if (activeBorrowings[borrowTo].totalInvestorAmount == activeBorrowings[borrowTo].borrowedAmount) {
+            activeBorrowings[borrowTo].fundingCompletedDate = currentTime;
+        }
+        
+        // Return unused money
+        if (investedAmount < msg.value) {
+            address payable addr = payable(msg.sender);
+            addr.transfer(msg.value - investedAmount);
+        }
+        
         return true;
+    }
+    
+    /*
+    Allows a user to check if investment in funded (but not paid out) project can be withdrawn.
+    returns: bool
+    */
+    function isWithdrawInvestementPossible(address borrowTo) public view returns (bool) {
+        if (investments[msg.sender].length == 0) {
+            return false;
+        }
+        for (uint i = 0; i < investments[msg.sender].length; i++) {
+            if (investments[msg.sender][i].borrowerAddress == borrowTo) {
+                break;
+            }
+            if (i == investments[msg.sender].length-1 && investments[msg.sender][i].borrowerAddress != borrowTo) {
+                return false;
+            }
+        }
+        if (activeBorrowings[borrowTo].borrowedAmount == activeBorrowings[borrowTo].totalInvestorAmount && activeBorrowings[borrowTo].paidOut == false &&
+        (currentTime - activeBorrowings[borrowTo].fundingCompletedDate)/60/60/24 >= 30) {
+            return true;
+        }
+        return false;
+    }
+    
+    /*
+    Withdraw investment from a funded (but not paid out) project. All investors will receive their investment back.
+    */
+    function withdrawInvestment(address borrowTo) public {
+        require(isWithdrawInvestementPossible(borrowTo), "Investment can only be withdrawn, if a borrower doesn't withdraw money from a fully funded project for at least 30 days.");
+        
+        address payable addr;
+        for(uint i = 0; i < activeBorrowings[borrowTo].investorAddresses.length; i++) {
+            addr = payable(activeBorrowings[borrowTo].investorAddresses[i]);
+            addr.transfer(activeBorrowings[borrowTo].investorAmounts[i]);
+            for (uint j = 0; j < investments[activeBorrowings[borrowTo].investorAddresses[i]].length; j++) {
+                if (investments[activeBorrowings[borrowTo].investorAddresses[i]][j].borrowerAddress == borrowTo) {
+                    investments[activeBorrowings[borrowTo].investorAddresses[i]][j].deleted = true;
+                    break;
+                } 
+            }
+        }
+        activeBorrowings[borrowTo].deleted = true;
     }
     
     /*
