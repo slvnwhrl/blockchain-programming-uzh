@@ -17,6 +17,12 @@ import {NgxMaskModule} from "ngx-mask";
 import {MatSliderModule} from "@angular/material/slider";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { RatesComponent } from './view/borrower/rates/rates.component';
+import { BorrowingDisplayerComponent } from './view/investor/borrowing-displayer/borrowing-displayer.component';
+import {MatProgressBarModule} from "@angular/material/progress-bar";
+import {MatDatepickerModule} from "@angular/material/datepicker";
+import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
+import { InvestmentDisplayerComponent } from './view/investor/investment-displayer/investment-displayer.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +30,10 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     BorrowerComponent,
     InvestorComponent,
     HomeComponent,
-    RequestComponent
+    RequestComponent,
+    RatesComponent,
+    BorrowingDisplayerComponent,
+    InvestmentDisplayerComponent
   ],
   imports: [
     BrowserModule,
@@ -38,9 +47,14 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     NgxMaskModule.forRoot(),
     MatSliderModule,
     MatFormFieldModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    MatProgressBarModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
-  providers: [],
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'de-CH' }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

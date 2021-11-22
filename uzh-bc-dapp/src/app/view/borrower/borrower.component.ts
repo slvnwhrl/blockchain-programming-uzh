@@ -47,6 +47,7 @@ export class BorrowerComponent implements OnInit {
         this.loading = false;
       } else {
         // TODO: Check next step
+        this.step = 1;
         this.loading = false;
       }
     })
