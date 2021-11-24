@@ -75,11 +75,19 @@ export class BorrowerComponent implements OnInit {
   requestQuote($event: BorrowingRequest) {
     this.loading = true;
     this.scService.requestBorrowing($event.amount, $event.durationMonths, $event.income, $event.expenses).then(value => {
-      this.borrowingConditions = value;
-      this.step = 1;
-      this.loading = false;
+      this.scService.getBorrowingConditions().then(value1 => {
+        this.borrowingConditions = value1;
+        this.step = 1;
+        this.loading = false;
+      }, (err1)=> {
+        console.log(err1)
+      });
     }, (err) => {
       console.log(err)
     });
+  }
+
+  committed($event: boolean) {
+    this.checkStep();
   }
 }

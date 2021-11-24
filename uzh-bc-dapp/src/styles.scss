@@ -22,6 +22,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; background-
 .invest-popover{
   background-color: #303030;
   border-color: lightgray;
+  width: 400px;
 }
 
 .invest-popover .arrow::after {
@@ -33,6 +34,9 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; background-
   border-color: lightgray;
 }
 
+.c-font{
+  color: lightgray;
+}
 .dp-popover .arrow::after {
   border-bottom-color: transparent !important;
 }
@@ -44,4 +48,33 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; background-
 
 .pointer{
   cursor: pointer;
+}
+
+.eth-span{
+  font-size: 13px;
+  padding-right: 5px;
+}
+
+.eth-icon{
+  font-size: 24px;
+  position: relative;
+  top: -2px;
+  padding-right: 5px;
+}
+
+.inv-label{
+  opacity: 0.7;
+  min-height: 40px;
+  position: relative;
+}
+
+.inv-label span{
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+.inv-value{
+  font-size: 30px;
+  margin-top: 8px;
 }

@@ -18,6 +18,7 @@ export class SmartContractService {
   web3Modal: any;
   smartContract: any;
   chainId: any;
+  contractAddress: string;
 
   // private accountStatusSource = new Subject<any>();
   // accountStatus$ = this.accountStatusSource.asObservable();
@@ -25,8 +26,15 @@ export class SmartContractService {
   error$ = this.errorSource.asObservable();
 
   constructor() {
+    this.contractAddress = environment.dapp_address;
+    if(localStorage.getItem('sc_addr') != null) {
+      this.contractAddress = localStorage.getItem('sc_addr')
+    } else {
+      localStorage.setItem('sc_addr', this.contractAddress);
+    }
+
     const providerOptions = {
-    };
+    }
 
     this.web3Modal = new Web3Modal({
       network: "mainnet", // optional
@@ -50,6 +58,21 @@ export class SmartContractService {
     // this.accountStatusSource.next(this.accounts);
 
 
+  }
+
+  getContractAddress(): string{
+    return this.contractAddress;
+  }
+
+  setContractAddress(address: string): boolean{
+    this.contractAddress = address;
+    localStorage.setItem('sc_addr', this.contractAddress);
+    try {
+      this.smartContract = new this.web3js.eth.Contract(dapp_abi, this.contractAddress);
+      return true;
+    } catch (e) {
+        return false;
+    }
   }
 
   getBalance(walletAddress: string): number {
@@ -254,7 +277,7 @@ export class SmartContractService {
       }else {
         this.errorSource.next('');
       }
-      this.smartContract = new this.web3js.eth.Contract(dapp_abi, environment.dapp_address);
+      this.smartContract = new this.web3js.eth.Contract(dapp_abi, this.contractAddress);
       this.provider.on("accountsChanged", (accounts: string[]) => {
         console.log('accountsChanged', accounts);
         this.accounts = accounts;
