@@ -1,6 +1,4 @@
-<button (click)="test2()">test2</button>
-<button (click)="test3()">test3</button>
-<div class="container" style="background-color: #303030">
+<div class="container mt-5" style="background-color: #303030">
   <div class="row" *ngIf="error">
     <div class="col-12">
       <div>{{error}}</div>
@@ -18,7 +16,12 @@
   </div>
   <div class="row" *ngIf="isConnected && !loading && step == 1">
     <div class="col-12">
-      <app-rates ></app-rates>
+      <app-commit [conditions]="borrowingConditions"></app-commit>
+    </div>
+  </div>
+  <div class="row" *ngIf="isConnected && !loading && step == 2">
+    <div class="col-12">
+      <app-payback [activeBorrowing]="activeBorrowing"></app-payback>
     </div>
   </div>
   <div class="row" *ngIf="!isConnected">

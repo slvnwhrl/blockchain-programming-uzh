@@ -108,6 +108,9 @@ struct Investment{
     
     // Date of most recent repayment
     uint256 mostRecentRepaymentDate;
+        
+    // Total duration of repayment in months
+    uint8 totalDurationMonths;
 }
 
 contract Lending {
@@ -125,6 +128,8 @@ contract Lending {
         we need to be able to advance time. In a real world example, we would always use block.timestamp
     */
     uint256 currentTime;
+
+    event BorrowingFunded(address indexed borrowerAddress);
     
     constructor() {
        owner = msg.sender;
@@ -251,8 +256,17 @@ contract Lending {
             0);
         activeBorrowings[msg.sender] = activeBorrowing;
         
+        
         // Save address of user to activeBorrowingAddresses, so it can be retrieved by possible investors
         activeBorrowingAddresses.push(msg.sender);
+        
+        // Reset borrowing request and borrowing conditions
+        borrowingRequests[msg.sender].amount = 0;
+        borrowingRequests[msg.sender].durationMonths = 0;
+        borrowingRequests[msg.sender].income = 0;
+        borrowingRequests[msg.sender].expenses = 0;
+        borrowingConditions[msg.sender].monthlyAmount = 0;
+        borrowingConditions[msg.sender].interestRate = 0;
     }
     
     /*
@@ -272,7 +286,7 @@ contract Lending {
         // For every investor find the according investment and set the start date
          for (uint i = 0; i < activeBorrowings[msg.sender].investorAddresses.length; i++){
              for (uint j = 0; j < investments[activeBorrowings[msg.sender].investorAddresses[i]].length; j++){
-                 if (investments[activeBorrowings[msg.sender].investorAddresses[i]][j].borrowerAddress == msg.sender){
+                 if (investments[activeBorrowings[msg.sender].investorAddresses[i]][j].borrowerAddress == msg.sender && investments[activeBorrowings[msg.sender].investorAddresses[i]][j].paidBack != true){
                      investments[activeBorrowings[msg.sender].investorAddresses[i]][j].startDate = currentTime;
                      break;
                  }
@@ -337,7 +351,7 @@ contract Lending {
          // For every investor find the according investment and set the start date
          for (uint i = 0; i < activeBorrowings[msg.sender].investorAddresses.length; i++){
              for (uint j = 0; j < investments[activeBorrowings[msg.sender].investorAddresses[i]].length; j++){
-                 if (investments[activeBorrowings[msg.sender].investorAddresses[i]][j].borrowerAddress == msg.sender){
+                 if (investments[activeBorrowings[msg.sender].investorAddresses[i]][j].borrowerAddress == msg.sender && investments[activeBorrowings[msg.sender].investorAddresses[i]][j].paidBack != true){
                      investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPaidBack += investments[activeBorrowings[msg.sender].investorAddresses[i]][j].monthlyAmount;
                      // TODO: Check with months left
                      investments[activeBorrowings[msg.sender].investorAddresses[i]][j].durationMonthsLeft -= 1;
@@ -422,7 +436,7 @@ contract Lending {
         bool invFound;
         // Already invested
         for (uint i = 0; i < investments[msg.sender].length; i++) {
-            if (investments[msg.sender][i].borrowerAddress == borrowTo) {
+            if (investments[msg.sender][i].borrowerAddress == borrowTo && investments[msg.sender][i].paidBack != true) {
                 investments[msg.sender][i].totalAmountLended += investedAmount;
                 investments[msg.sender][i].totalAmountLendedWithInterest += investorRate * investedAmount / 10000;
                 investments[msg.sender][i].monthlyAmount += investorRate * investedAmount / 10000 / activeBorrowings[borrowTo].totalDurationMonths;
@@ -450,7 +464,8 @@ contract Lending {
                 false,
                 false,
                 0,
-                0);
+                0,
+                activeBorrowings[borrowTo].totalDurationMonths);
                 
                 investments[msg.sender].push(investment);
         
@@ -461,6 +476,7 @@ contract Lending {
         
         if (activeBorrowings[borrowTo].totalInvestorAmount == activeBorrowings[borrowTo].borrowedAmount) {
             activeBorrowings[borrowTo].fundingCompletedDate = currentTime;
+            emit BorrowingFunded(borrowTo);
         }
         
         // Return unused money
@@ -481,10 +497,10 @@ contract Lending {
             return false;
         }
         for (uint i = 0; i < investments[msg.sender].length; i++) {
-            if (investments[msg.sender][i].borrowerAddress == borrowTo) {
+            if (investments[msg.sender][i].borrowerAddress == borrowTo && investments[msg.sender][i].paidBack != true) {
                 break;
             }
-            if (i == investments[msg.sender].length-1 && investments[msg.sender][i].borrowerAddress != borrowTo) {
+            if (i == investments[msg.sender].length-1 && investments[msg.sender][i].borrowerAddress != borrowTo && investments[msg.sender][i].paidBack != true) {
                 return false;
             }
         }
@@ -506,7 +522,7 @@ contract Lending {
             addr = payable(activeBorrowings[borrowTo].investorAddresses[i]);
             addr.transfer(activeBorrowings[borrowTo].investorAmounts[i]);
             for (uint j = 0; j < investments[activeBorrowings[borrowTo].investorAddresses[i]].length; j++) {
-                if (investments[activeBorrowings[borrowTo].investorAddresses[i]][j].borrowerAddress == borrowTo) {
+                if (investments[activeBorrowings[borrowTo].investorAddresses[i]][j].borrowerAddress == borrowTo && investments[msg.sender][i].paidBack != true) {
                     investments[activeBorrowings[borrowTo].investorAddresses[i]][j].deleted = true;
                     break;
                 } 

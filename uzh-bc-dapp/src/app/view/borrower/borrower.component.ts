@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {SmartContractService} from "../../service/smart-contract.service";
-import {BorrowingRequest} from "../../model/models";
+import {ActiveBorrowing, BorrowingConditions, BorrowingRequest} from "../../model/models";
 
 @Component({
   selector: 'app-borrower',
@@ -13,6 +13,8 @@ export class BorrowerComponent implements OnInit {
   loading = false;
   isConnected = false;
   error: string = '';
+  borrowingConditions: BorrowingConditions;
+  activeBorrowing: ActiveBorrowing;
 
   constructor(private scService: SmartContractService) {
   }
@@ -39,28 +41,28 @@ export class BorrowerComponent implements OnInit {
 
   checkStep(): void {
     this.loading = true;
-    this.scService.getBorrowingRequest().then(value => {
-      console.log(value);
-      console.log(value.amount === 0 && value.durationMonths === 0 && value.expenses === 0 && value.income === 0);
-      if (value.amount === 0 && value.durationMonths === 0 && value.expenses === 0 && value.income === 0) {
-        this.step = 0;
-        this.loading = false;
+    this.scService.getActiveBorrowing().then(value => {
+      if (value.payedBack == false && value.borrowedAmount > 0) {
+        this.step = 2;
+        this.activeBorrowing = value;
+        this.loading = false
       } else {
-        // TODO: Check next step
-        this.step = 1;
-        this.loading = false;
+        this.scService.getBorrowingRequest().then(value => {
+          console.log(value);
+          console.log(value.amount === 0 && value.durationMonths === 0 && value.expenses === 0 && value.income === 0);
+          if (value.amount === 0 && value.durationMonths === 0 && value.expenses === 0 && value.income === 0) {
+            this.step = 0;
+            this.loading = false;
+          } else {
+            this.scService.getBorrowingConditions().then(value1 => {
+              this.borrowingConditions = value1;
+              this.step = 1;
+              this.loading = false;
+            })
+          }
+        })
       }
     })
-  }
-
-
-  test2() {
-    console.log(this.scService.requestBorrowing(100, 12, 500, 100));
-
-  }
-
-  test3() {
-    console.log(this.scService.getBorrowingRequest());
 
   }
 
@@ -71,6 +73,13 @@ export class BorrowerComponent implements OnInit {
   }
 
   requestQuote($event: BorrowingRequest) {
-    this.scService.requestBorrowing($event.amount, $event.durationMonths, $event.income, $event.expenses);
+    this.loading = true;
+    this.scService.requestBorrowing($event.amount, $event.durationMonths, $event.income, $event.expenses).then(value => {
+      this.borrowingConditions = value;
+      this.step = 1;
+      this.loading = false;
+    }, (err) => {
+      console.log(err)
+    });
   }
 }

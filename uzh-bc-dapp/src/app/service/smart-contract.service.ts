@@ -1,13 +1,13 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 
 import Web3 from "web3";
 import Web3Modal from "web3modal";
-import WalletConnectProvider from "@walletconnect/web3-provider";
-import { Subject } from 'rxjs';
+import {Subject} from 'rxjs';
 
-import { dapp_abi } from '../../abi'
-import {ActiveBorrowing, BorrowingRequest, Investment} from "../model/models";
+import {dapp_abi} from '../../abi'
+import {ActiveBorrowing, BorrowingConditions, BorrowingRequest, Investment} from "../model/models";
 import {environment} from "../../environments/environment";
+
 @Injectable({
   providedIn: 'root'
 })
@@ -72,10 +72,10 @@ export class SmartContractService {
     // this.accounts = await this.web3js.eth.getAccounts();
 
     // this.smartContract = new this.web3js.eth.Contract(dapp_abi, environment.dapp_address);
-    const create = await this.smartContract
+    const request = await this.smartContract
       .methods.requestBorrowing(amount.toString(), durationMonths, income, expenses)
       .send({ from: this.accounts[0] });
-    return create;
+    return new BorrowingConditions(request[0], request[1]);
   }
 
   async getBorrowingRequest() {
@@ -89,12 +89,48 @@ export class SmartContractService {
     return new BorrowingRequest(parseInt(create[0]), parseInt(create[1]), parseInt(create[2]), parseInt(create[3]));
   }
 
+  async getBorrowingConditions() {
+    await this.createProviderAndWeb3();
+    // this.accounts = await this.web3js.eth.getAccounts();
+
+    // this.smartContract = new this.web3js.eth.Contract(dapp_abi, environment.dapp_address);
+    const request = await this.smartContract
+      .methods.getBorrowingConditions()
+      .call({ from: this.accounts[0] });
+    return new BorrowingConditions(request[0], request[1]);
+  }
+
   async getActiveBorrowingAddresses() {
     await this.createProviderAndWeb3();
     const addresses = await this.smartContract
       .methods.getActiveBorrowingAddresses()
       .call({ from: this.accounts[0] });
     return addresses;
+  }
+
+  async getActiveBorrowing() {
+    await this.createProviderAndWeb3();
+    const borrowing = await this.smartContract
+      .methods.getActiveBorrowing()
+      .call({ from: this.accounts[0] });
+    const ab = new ActiveBorrowing(
+      parseInt(borrowing[0]),
+      parseInt(borrowing[1]),
+      parseInt(borrowing[2]),
+      parseInt(borrowing[3]),
+      borrowing[4],
+      parseInt(borrowing[5]),
+      borrowing[6],
+      borrowing[7],
+      parseInt(borrowing[8]),
+      borrowing[9],
+      borrowing[10],
+      borrowing[11],
+      parseInt(borrowing[12]),
+      parseInt(borrowing[13]),
+      parseInt(borrowing[14]),
+    );
+    return ab;
   }
 
   async getActiveBorrowingByAddress(address: string) {
@@ -107,7 +143,7 @@ export class SmartContractService {
       parseInt(borrowing[1]),
       parseInt(borrowing[2]),
       parseInt(borrowing[3]),
-      parseInt(borrowing[4]),
+      borrowing[4],
       parseInt(borrowing[5]),
       borrowing[6],
       borrowing[7],
@@ -117,6 +153,7 @@ export class SmartContractService {
       borrowing[11],
       parseInt(borrowing[12]),
       parseInt(borrowing[13]),
+      parseInt(borrowing[14]),
     );
     ab.address = address;
     return ab;
@@ -140,12 +177,33 @@ export class SmartContractService {
         val[7],
         val[8],
         parseInt(val[9]),
-        parseInt(val[10])
+        parseInt(val[10]),
+        parseInt(val[11])
       )
       investments.push(i);
     })
    return investments;
   }
+
+  async commitBorrowing() {
+    await this.createProviderAndWeb3();
+    const res = await this.smartContract.methods.commitBorrowing().send({ from: this.accounts[0] });
+    return res;
+  }
+
+  async isPayBackPossible() {
+    await this.createProviderAndWeb3();
+    const res = await this.smartContract.methods.isPayBackPossible().call({ from: this.accounts[0] });
+    return res;
+  }
+
+  async packBackBorrower(amount: string) {
+    await this.createProviderAndWeb3();
+    const res = await this.smartContract.methods.packBackBorrower().send({ from: this.accounts[0],  value: amount });
+    return res;
+  }
+
+
 
   async investMoney(address: string, value: number) {
     await this.createProviderAndWeb3();
@@ -153,6 +211,14 @@ export class SmartContractService {
     const result = await this.smartContract
       .methods.investMoney(address)
       .send({ from: this.accounts[0], value: updatedValue });
+    return result;
+  }
+
+  async withdrawMoney() {
+    await this.createProviderAndWeb3();
+    const result = await this.smartContract
+      .methods.withdrawMoney()
+      .send({ from: this.accounts[0]});
     return result;
   }
 
@@ -170,6 +236,10 @@ export class SmartContractService {
       .methods.setContractTime(timestamp)
       .send({ from: this.accounts[0] });
     return time;
+  }
+
+  getConnectedAccount(): string{
+    return this.accounts[0];
   }
 
 

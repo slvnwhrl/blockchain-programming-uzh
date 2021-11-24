@@ -27,7 +27,7 @@ export class InvestorComponent implements OnInit {
       value.forEach((val: string, key: any, arr: any)  => {
 
         this.scService.getActiveBorrowingByAddress(val).then(value1 => {
-          if(value1.payedOut != true){
+          if(value1.payedOut != true && value1.address != this.scService.getConnectedAccount()){
             this.activeBorrowings.push(value1);
           }
         });
@@ -42,8 +42,8 @@ export class InvestorComponent implements OnInit {
     this.loadingInvestments = true;
     this.investments = [];
     this.scService.getInvestments().then(value => {
-     this.investments = value;
-     this.loadingInvestments = false;
+      this.investments = value;
+      this.loadingInvestments = false;
     })
   }
 

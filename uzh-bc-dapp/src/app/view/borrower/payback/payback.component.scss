@@ -1,0 +1,43 @@
+.inv-label{
+  opacity: 0.7;
+}
+
+.inv-value{
+  font-size: 30px;
+  margin-top: 8px;
+}
+
+.eth-icon{
+  font-size: 24px;
+  position: relative;
+  top: -2px;
+}
+
+.progress-risk{
+  height: 4px;
+  background-color: #525252;
+}
+
+.progress-risk-bar {
+  height: 4px;
+  -webkit-mask: linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0);
+}
+
+.progress-risk-bar::before {
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background: linear-gradient(90deg, rgba(8,134,12,1) 0%, rgba(195,118,35,1) 50%, rgba(185,68,68,1) 100%);
+}
+
+.template-div{
+  min-width: 200px;
+}
+
+.text-green{
+  color: rgba(8,134,12,1);
+}

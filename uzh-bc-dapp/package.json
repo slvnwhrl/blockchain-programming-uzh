@@ -30,6 +30,7 @@
     "@ng-bootstrap/ng-bootstrap": "^10.0.0",
     "@walletconnect/web3-provider": "^1.6.6",
     "assert": "^2.0.0",
+    "bn.js": "^5.2.0",
     "bootstrap": "^4.5.0",
     "browser": "^0.2.6",
     "crypto-browserify": "^3.12.0",
