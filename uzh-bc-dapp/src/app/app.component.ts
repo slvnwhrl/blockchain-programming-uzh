@@ -7,6 +7,7 @@ import {NgbPopoverConfig, NgbTooltipConfig} from '@ng-bootstrap/ng-bootstrap';
 import {MatDatepickerInputEvent} from "@angular/material/datepicker";
 import {SmartContractService} from "./service/smart-contract.service";
 import {number} from "prop-types";
+import {FormControl} from "@angular/forms";
 
 @Component({
   selector: 'app-root',
@@ -16,12 +17,16 @@ import {number} from "prop-types";
 export class AppComponent implements OnInit{
   title = 'uzh-bc-dapp';
   contractTimestamp: number;
+  currentContractAddress = '';
+  scControl: FormControl;
   constructor(lib: FaIconLibrary, conf: NgbTooltipConfig, conf2: NgbPopoverConfig, private scService: SmartContractService) {
     lib.addIconPacks(far);
     lib.addIconPacks(fas);
     lib.addIconPacks(fab);
     conf.container = 'body';
     conf2.container = 'body';
+    this.currentContractAddress = this.scService.getContractAddress();
+    this.scControl = new FormControl(this.currentContractAddress);
   }
 
   getContractTime() {
@@ -49,5 +54,18 @@ export class AppComponent implements OnInit{
     this.scService.setContractTime(ts).then(value => {
       this.getContractTime();
     })
+  }
+
+  saveSCAddress(popover: any): void {
+    const res = this.scService.setContractAddress(this.scControl.value);
+    if (res){
+      this.currentContractAddress = this.scService.getContractAddress();
+      popover.close();
+      window.location.reload();
+    }else {
+      this.scControl.setValue('invalid');
+      this.currentContractAddress = 'invalid';
+    }
+
   }
 }

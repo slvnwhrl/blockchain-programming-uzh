@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {BorrowingConditions} from "../../../model/models";
 import {SmartContractService} from "../../../service/smart-contract.service";
 
@@ -10,7 +10,9 @@ import {SmartContractService} from "../../../service/smart-contract.service";
 export class CommitComponent implements OnInit {
 
   @Input()
-  conditions: BorrowingConditions
+  conditions: BorrowingConditions;
+  @Output()
+  commited: EventEmitter<boolean> = new EventEmitter<boolean>();
   constructor(private scService: SmartContractService) { }
 
   ngOnInit(): void {
@@ -18,7 +20,9 @@ export class CommitComponent implements OnInit {
 
   commit() {
     this.scService.commitBorrowing().then(value => {
-
+      this.commited.emit(true);
+    }, () => {
+      this.commited.emit(false);
     })
   }
 }

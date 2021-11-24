@@ -2,22 +2,23 @@
   <div class="container">
     <div class="row mb-2">
       <div class="col-4">
-        <div class="text-right w-100 inv-label">Yield</div>
+        <div class="text-right w-100 inv-label"><span>Yield</span></div>
         <div class="text-right w-100 inv-value c-primary">{{(borrowing.interestRate / 100) - 1| number: '.2-2'}}%</div>
       </div>
       <div class="col-4">
-        <div class="text-right w-100 inv-label">Total Amount</div>
+        <div class="text-right w-100 inv-label"><span>Total Amount</span></div>
         <div class="text-right w-100 inv-value">
-          <fa-icon [icon]="['fab', 'ethereum']" class="eth-icon"></fa-icon> {{(borrowing.borrowedAmount / 1e18)}} ETH</div>
+          <span class="eth-span">ETH</span>
+          <fa-icon [icon]="['fab', 'ethereum']" class="eth-icon"></fa-icon><span [ngbTooltip]="(borrowing.borrowedAmount / 1e18).toString() + ' ETH'">{{(borrowing.borrowedAmount / 1e18 | number: '.1-3')}}</span></div>
       </div>
       <div class="col-4">
-        <div class="text-right w-100 inv-label">Duration (months)</div>
+        <div class="text-right w-100 inv-label"><span>Duration (months)</span></div>
         <div class="text-right w-100 inv-value">{{(borrowing.totalDurationMonths)}}</div>
       </div>
     </div>
     <div class="row mb-4">
       <div class="col-12">
-        <div class="text-right w-100 inv-label mb-1">Risk ({{risk | number: '.2-2'}}%)</div>
+        <div class="text-right w-100 inv-label mb-1"><span>Risk ({{risk | number: '.2-2'}}%)</span></div>
         <div class="progress-risk w-100">
           <div class="progress-risk-bar" [style]="'width: ' + risk + '%;'"></div>
         </div>
@@ -25,7 +26,7 @@
     </div>
     <div class="row mb-4">
       <div class="col-12">
-        <div class="text-right w-100 inv-label mb-1">Funding ({{fundingRate | number: '.2-2'}}%)</div>
+        <div class="text-right w-100 inv-label mb-1"><span>Funding ({{fundingRate | number: '.2-2'}}%)</span></div>
         <mat-progress-bar mode="determinate" [value]="fundingRate"></mat-progress-bar>
       </div>
     </div>
