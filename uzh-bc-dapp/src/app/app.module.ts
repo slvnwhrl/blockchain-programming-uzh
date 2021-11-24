@@ -17,12 +17,13 @@ import {NgxMaskModule} from "ngx-mask";
 import {MatSliderModule} from "@angular/material/slider";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { RatesComponent } from './view/borrower/rates/rates.component';
 import { BorrowingDisplayerComponent } from './view/investor/borrowing-displayer/borrowing-displayer.component';
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
 import { InvestmentDisplayerComponent } from './view/investor/investment-displayer/investment-displayer.component';
+import { CommitComponent } from './view/borrower/commit/commit.component';
+import { PaybackComponent } from './view/borrower/payback/payback.component';
 
 @NgModule({
   declarations: [
@@ -31,9 +32,10 @@ import { InvestmentDisplayerComponent } from './view/investor/investment-display
     InvestorComponent,
     HomeComponent,
     RequestComponent,
-    RatesComponent,
     BorrowingDisplayerComponent,
-    InvestmentDisplayerComponent
+    InvestmentDisplayerComponent,
+    CommitComponent,
+    PaybackComponent
   ],
   imports: [
     BrowserModule,

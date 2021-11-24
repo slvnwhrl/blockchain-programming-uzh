@@ -1,0 +1,75 @@
+<div class="w-100 border p-3 mb-2">
+  <div class="container">
+    <div class="row mb-2">
+      <div class="col-3">
+        <div class="text-right w-100 inv-label">Interest Rate</div>
+        <div class="text-right w-100 inv-value c-primary">{{(activeBorrowing.interestRate / 100)| number: '.2-2'}}%</div>
+      </div>
+      <div class="col-3">
+        <div class="text-right w-100 inv-label">Total Amount</div>
+        <div class="text-right w-100 inv-value">
+          <fa-icon [icon]="['fab', 'ethereum']" class="eth-icon"></fa-icon> {{(activeBorrowing.borrowedAmount / 1e18) | number: '.2-2'}} ETH</div>
+      </div>
+      <div class="col-3">
+        <div class="text-right w-100 inv-label">Duration (months)</div>
+        <div class="text-right w-100 inv-value">{{(activeBorrowing.totalDurationMonths)}}</div>
+      </div>
+      <div class="col-3">
+        <div class="text-right w-100 inv-label">Monthly Payback</div>
+        <div class="text-right w-100 inv-value">
+          <fa-icon [icon]="['fab', 'ethereum']" class="eth-icon"></fa-icon> {{(monthlyAmount / 1e18) | number: '.2-2'}} ETH</div>
+      </div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-3">
+        <div class="text-right w-100 inv-label">Funding Date</div>
+        <div class="text-right w-100 inv-value">{{activeBorrowing.fundingCompletedDate == 0 ? '-' :(activeBorrowing.fundingCompletedDate * 1000)| date:'dd.MM.yyyy'}}</div>
+      </div>
+      <div class="col-3">
+        <div class="text-right w-100 inv-label">Withdrawal Date</div>
+        <div class="text-right w-100 inv-value">{{activeBorrowing.withdrawalDate == 0 ? '-' :(activeBorrowing.withdrawalDate * 1000)| date:'dd.MM.yyyy'}}</div>
+      </div>
+      <div class="col-3">
+        <div class="text-right w-100 inv-label">Amount Left</div>
+        <div class="text-right w-100 inv-value">{{(activeBorrowing.amountLeftToRepay / 1e18) | number: '.2-2'}} ETH</div>
+      </div>
+      <div class="col-3">
+        <div class="text-right w-100 inv-label">Months Left</div>
+        <div class="text-right w-100 inv-value">{{activeBorrowing.durationMonthsLeft}}</div>
+      </div>
+    </div>
+    <div class="row mb-4" *ngIf="activeBorrowing.payedOut">
+      <div class="col-12">
+        <div class="text-right w-100 inv-label mb-1">Payed Back ({{payedBackRate | number: '.2-2'}}%)</div>
+        <mat-progress-bar mode="determinate" [value]="payedBackRate"></mat-progress-bar>
+      </div>
+    </div>
+    <div class="row mb-4" *ngIf="!activeBorrowing.payedOut">
+      <div class="col-12">
+        <div class="text-right w-100 inv-label mb-1">Funded ({{fundingRate | number: '.2-2'}}%)</div>
+        <mat-progress-bar mode="determinate" [value]="fundingRate"></mat-progress-bar>
+      </div>
+    </div>
+    <div class="row"  *ngIf="activeBorrowing.fundingCompletedDate != 0 && activeBorrowing.payedOut">
+      <div class="col-12">
+        <button mat-flat-button color="primary" class="float-right" (click)="checkIfPaymentPossible()" *ngIf="!paymentPossible" [disabled]="paymentPossibleChecked">
+          {{paymentPossibleChecked ? 'Payment not possible yet' : 'Check if payment possible'}}
+        </button>
+        <button mat-flat-button color="primary" class="float-right" (click)="payBack()" *ngIf="paymentPossible && !payedBackMonthlySuccess">Pay Back {{(activeBorrowing.monthlyAmount / 1e18) | number: '.2-2'}} ETH</button>
+      </div>
+      <div class="col-12 pt-2" *ngIf="payedBackMonthlySuccess">
+        <p class="text-right text-green">Successfully paid back {{(activeBorrowing.monthlyAmount / 1e18) | number: '.2-2'}} ETH</p>
+      </div>
+    </div>
+    <div class="row"  *ngIf="activeBorrowing.fundingCompletedDate == 0">
+      <div class="col-12">
+        <button mat-flat-button color="primary" class="float-right" [disabled]="true">Waiting for funding <fa-icon [icon]="['fas', 'spinner']" class="ml-1" spin="true"></fa-icon> </button>
+      </div>
+    </div>
+    <div class="row"  *ngIf="activeBorrowing.fundingCompletedDate != 0 && !activeBorrowing.payedOut">
+      <div class="col-12">
+        <button mat-flat-button color="primary" class="float-right" (click)="withdrawMoney()">Withdraw money</button>
+      </div>
+    </div>
+  </div>
+</div>

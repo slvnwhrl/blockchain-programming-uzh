@@ -1,33 +1,8 @@
-export const dapp_abi =[
+export const dapp_abi = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
-  },
-  {
-    "inputs": [],
-    "name": "calculateBorrowingConditions",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "monthlyAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "interestRate",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct BorrowingConditions",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
   },
   {
     "inputs": [],
@@ -48,9 +23,9 @@ export const dapp_abi =[
             "type": "uint256"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint8",
             "name": "totalDurationMonths",
-            "type": "uint256"
+            "type": "uint8"
           },
           {
             "internalType": "uint256",
@@ -58,9 +33,9 @@ export const dapp_abi =[
             "type": "uint256"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint8",
             "name": "durationMonthsLeft",
-            "type": "uint256"
+            "type": "uint8"
           },
           {
             "internalType": "uint256",
@@ -94,12 +69,12 @@ export const dapp_abi =[
           },
           {
             "internalType": "bool",
-            "name": "payedOut",
+            "name": "paidOut",
             "type": "bool"
           },
           {
             "internalType": "bool",
-            "name": "payedBack",
+            "name": "paidBack",
             "type": "bool"
           },
           {
@@ -110,6 +85,11 @@ export const dapp_abi =[
           {
             "internalType": "uint256",
             "name": "mostRecentRepaymentDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fundingCompletedDate",
             "type": "uint256"
           }
         ],
@@ -152,9 +132,9 @@ export const dapp_abi =[
             "type": "uint256"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint8",
             "name": "totalDurationMonths",
-            "type": "uint256"
+            "type": "uint8"
           },
           {
             "internalType": "uint256",
@@ -162,9 +142,9 @@ export const dapp_abi =[
             "type": "uint256"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint8",
             "name": "durationMonthsLeft",
-            "type": "uint256"
+            "type": "uint8"
           },
           {
             "internalType": "uint256",
@@ -198,12 +178,12 @@ export const dapp_abi =[
           },
           {
             "internalType": "bool",
-            "name": "payedOut",
+            "name": "paidOut",
             "type": "bool"
           },
           {
             "internalType": "bool",
-            "name": "payedBack",
+            "name": "paidBack",
             "type": "bool"
           },
           {
@@ -214,6 +194,11 @@ export const dapp_abi =[
           {
             "internalType": "uint256",
             "name": "mostRecentRepaymentDate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fundingCompletedDate",
             "type": "uint256"
           }
         ],
@@ -262,9 +247,9 @@ export const dapp_abi =[
             "type": "uint256"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint8",
             "name": "durationMonths",
-            "type": "uint256"
+            "type": "uint8"
           },
           {
             "internalType": "uint256",
@@ -344,7 +329,7 @@ export const dapp_abi =[
           },
           {
             "internalType": "uint256",
-            "name": "amountPayedBack",
+            "name": "amountPaidBack",
             "type": "uint256"
           },
           {
@@ -359,7 +344,7 @@ export const dapp_abi =[
           },
           {
             "internalType": "bool",
-            "name": "payedBack",
+            "name": "paidBack",
             "type": "bool"
           },
           {
@@ -371,6 +356,11 @@ export const dapp_abi =[
             "internalType": "uint256",
             "name": "mostRecentRepaymentDate",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "totalDurationMonths",
+            "type": "uint8"
           }
         ],
         "internalType": "struct Investment[]",
@@ -403,6 +393,25 @@ export const dapp_abi =[
   {
     "inputs": [],
     "name": "isPayBackPossible",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "borrowTo",
+        "type": "address"
+      }
+    ],
+    "name": "isWithdrawInvestementPossible",
     "outputs": [
       {
         "internalType": "bool",
@@ -460,9 +469,9 @@ export const dapp_abi =[
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint8",
         "name": "durationMonths",
-        "type": "uint256"
+        "type": "uint8"
       },
       {
         "internalType": "uint256",
@@ -476,7 +485,25 @@ export const dapp_abi =[
       }
     ],
     "name": "requestBorrowing",
-    "outputs": [],
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "monthlyAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "interestRate",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct BorrowingConditions",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -489,6 +516,19 @@ export const dapp_abi =[
       }
     ],
     "name": "setContractTime",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "borrowTo",
+        "type": "address"
+      }
+    ],
+    "name": "withdrawInvestment",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -46,7 +46,7 @@ export class ActiveBorrowing {
   durationMonthsLeft: number;
 
   // Amount to pay back monthly
-  monthlyAmount: number;
+  monthlyAmount: string;
 
   // Interest Rate on whole amount
   interestRate: number;
@@ -75,10 +75,13 @@ export class ActiveBorrowing {
   // Date of most recent repayment
   mostRecentRepaymentDate: number;
 
+  // Date of completing the funding
+  fundingCompletedDate: number;
+
   // address temp field
   address: string
 
-  constructor(borrowedAmount: number, totalDurationMonths: number, amountLeftToRepay: number, durationMonthsLeft: number, monthlyAmount: number, interestRate: number, investorAddresses: string[], investorAmounts: number[], totalInvestorAmount: number, deleted: boolean, payedOut: boolean, payedBack: boolean, withdrawalDate: number, mostRecentRepaymentDate: number) {
+  constructor(borrowedAmount: number, totalDurationMonths: number, amountLeftToRepay: number, durationMonthsLeft: number, monthlyAmount: string, interestRate: number, investorAddresses: string[], investorAmounts: number[], totalInvestorAmount: number, deleted: boolean, payedOut: boolean, payedBack: boolean, withdrawalDate: number, mostRecentRepaymentDate: number, fundingCompletedDate: number) {
     this.borrowedAmount = borrowedAmount;
     this.totalDurationMonths = totalDurationMonths;
     this.amountLeftToRepay = amountLeftToRepay;
@@ -93,6 +96,7 @@ export class ActiveBorrowing {
     this.payedBack = payedBack;
     this.withdrawalDate = withdrawalDate;
     this.mostRecentRepaymentDate = mostRecentRepaymentDate;
+    this.fundingCompletedDate = fundingCompletedDate;
   }
 }
 
@@ -131,7 +135,11 @@ export class Investment{
   // Date of most recent repayment
   mostRecentRepaymentDate: number;
 
-  constructor(borrowerAddress: string, totalAmountLended: number, totalAmountLendedWithInterest: number, monthlyAmount: number, interestRate: number, amountPayedBack: number, durationMonthsLeft: number, deleted: boolean, payedBack: boolean, startDate: number, mostRecentRepaymentDate: number) {
+  // Total duration of repayment in months
+  totalDurationMonths: number;
+
+
+  constructor(borrowerAddress: string, totalAmountLended: number, totalAmountLendedWithInterest: number, monthlyAmount: number, interestRate: number, amountPayedBack: number, durationMonthsLeft: number, deleted: boolean, payedBack: boolean, startDate: number, mostRecentRepaymentDate: number, totalDurationMonths: number) {
     this.borrowerAddress = borrowerAddress;
     this.totalAmountLended = totalAmountLended;
     this.totalAmountLendedWithInterest = totalAmountLendedWithInterest;
@@ -143,5 +151,6 @@ export class Investment{
     this.payedBack = payedBack;
     this.startDate = startDate;
     this.mostRecentRepaymentDate = mostRecentRepaymentDate;
+    this.totalDurationMonths = totalDurationMonths;
   }
 }

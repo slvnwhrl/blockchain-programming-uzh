@@ -30,11 +30,12 @@ export class AppComponent implements OnInit{
       this.contractTimestamp = value * 1000;
     });
   }
-  setContractDate($event: MatDatepickerInputEvent<unknown, unknown | null>): void {
+  setContractDate($event: MatDatepickerInputEvent<unknown, unknown | null>, popover: any): void {
     console.log($event.value.valueOf())
     const ts: number = ($event.value.valueOf() as number);
     this.scService.setContractTime(Math.floor(ts/1000)).then(value => {
       this.getContractTime();
+      popover.close();
     })
   }
 
