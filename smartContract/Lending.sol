@@ -108,7 +108,7 @@ struct Investment{
     
     // Date of most recent repayment
     uint256 mostRecentRepaymentDate;
-        
+
     // Total duration of repayment in months
     uint8 totalDurationMonths;
 }
@@ -121,6 +121,10 @@ contract Lending {
     mapping(address => BorrowingConditions) borrowingConditions;
     mapping(address => ActiveBorrowing) activeBorrowings;
     mapping(address => Investment[]) investments;
+    // Mapping from investor to index of an investement from a specific borrower in investments mapping
+    mapping(address => mapping(address => uint128)) investorToActiveInvestment;
+    // Mapping from a borrower to a specific investor address in investorAddresses (in ActiveBorrowing struct)
+    mapping(address => mapping(address => uint128)) borrowerToActiveInvestor;
     
     address[] activeBorrowingAddresses;
     
@@ -130,7 +134,7 @@ contract Lending {
     uint256 currentTime;
 
     event BorrowingFunded(address indexed borrowerAddress);
-    
+
     constructor() {
        owner = msg.sender;
        currentTime = block.timestamp;
@@ -256,10 +260,9 @@ contract Lending {
             0);
         activeBorrowings[msg.sender] = activeBorrowing;
         
-        
         // Save address of user to activeBorrowingAddresses, so it can be retrieved by possible investors
         activeBorrowingAddresses.push(msg.sender);
-        
+
         // Reset borrowing request and borrowing conditions
         borrowingRequests[msg.sender].amount = 0;
         borrowingRequests[msg.sender].durationMonths = 0;
@@ -284,15 +287,9 @@ contract Lending {
         addr.transfer(activeBorrowings[msg.sender].borrowedAmount);
         
         // For every investor find the according investment and set the start date
-         for (uint i = 0; i < activeBorrowings[msg.sender].investorAddresses.length; i++){
-             for (uint j = 0; j < investments[activeBorrowings[msg.sender].investorAddresses[i]].length; j++){
-                 if (investments[activeBorrowings[msg.sender].investorAddresses[i]][j].borrowerAddress == msg.sender && investments[activeBorrowings[msg.sender].investorAddresses[i]][j].paidBack != true){
-                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].startDate = currentTime;
-                     break;
-                 }
-             }
-         }
-        
+        for (uint i = 0; i < activeBorrowings[msg.sender].investorAddresses.length; i++){
+            investments[activeBorrowings[msg.sender].investorAddresses[i]][investorToActiveInvestment[activeBorrowings[msg.sender].investorAddresses[i]][msg.sender]].startDate = currentTime;
+        }
         
         // Remove address from activeBorrowingAddresses, since it does not need funding anymore
         for (uint k = 0; k < activeBorrowingAddresses.length; k++) {
@@ -347,24 +344,21 @@ contract Lending {
         require (isPayBackPossible(), "Payback not possible");
         require (msg.value == activeBorrowings[msg.sender].monthlyAmount, "Not the correct amount to pay back");
         
-        
-         // For every investor find the according investment and set the start date
-         for (uint i = 0; i < activeBorrowings[msg.sender].investorAddresses.length; i++){
-             for (uint j = 0; j < investments[activeBorrowings[msg.sender].investorAddresses[i]].length; j++){
-                 if (investments[activeBorrowings[msg.sender].investorAddresses[i]][j].borrowerAddress == msg.sender && investments[activeBorrowings[msg.sender].investorAddresses[i]][j].paidBack != true){
-                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPaidBack += investments[activeBorrowings[msg.sender].investorAddresses[i]][j].monthlyAmount;
-                     // TODO: Check with months left
-                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].durationMonthsLeft -= 1;
-                     investments[activeBorrowings[msg.sender].investorAddresses[i]][j].mostRecentRepaymentDate = currentTime;
-                     address payable addr = payable(activeBorrowings[msg.sender].investorAddresses[i]);
-                     addr.transfer(investments[activeBorrowings[msg.sender].investorAddresses[i]][j].monthlyAmount);
-                     if(investments[activeBorrowings[msg.sender].investorAddresses[i]][j].amountPaidBack == investments[activeBorrowings[msg.sender].investorAddresses[i]][j].totalAmountLendedWithInterest){
-                         investments[activeBorrowings[msg.sender].investorAddresses[i]][j].paidBack = true;
-                     }
-                     break;
-                 }
-             }
-         }
+        // For every investor find the according investment and set the start date
+        uint128 invIndex;
+        for (uint i = 0; i < activeBorrowings[msg.sender].investorAddresses.length; i++){
+            invIndex = investorToActiveInvestment[activeBorrowings[msg.sender].investorAddresses[i]][msg.sender];
+
+            investments[activeBorrowings[msg.sender].investorAddresses[i]][invIndex].amountPaidBack += investments[activeBorrowings[msg.sender].investorAddresses[i]][invIndex].monthlyAmount;
+            // TODO: Check with months left
+            investments[activeBorrowings[msg.sender].investorAddresses[i]][invIndex].durationMonthsLeft -= 1;
+            investments[activeBorrowings[msg.sender].investorAddresses[i]][invIndex].mostRecentRepaymentDate = currentTime;
+            address payable addr = payable(activeBorrowings[msg.sender].investorAddresses[i]);
+            addr.transfer(investments[activeBorrowings[msg.sender].investorAddresses[i]][invIndex].monthlyAmount);
+            if(investments[activeBorrowings[msg.sender].investorAddresses[i]][invIndex].amountPaidBack == investments[activeBorrowings[msg.sender].investorAddresses[i]][invIndex].totalAmountLendedWithInterest){
+                investments[activeBorrowings[msg.sender].investorAddresses[i]][invIndex].paidBack = true;
+            }
+        }
          
         // TODO: Check with months left
         activeBorrowings[msg.sender].amountLeftToRepay -= msg.value;
@@ -376,8 +370,6 @@ contract Lending {
         }
         return true;
     }
-    
-    
     
     /*
         Allows user to retrieve active borrowing conditions
@@ -433,23 +425,14 @@ contract Lending {
         // Investor rate (fixed precision float) minus 1% (-100)
         uint256 investorRate = (10000 + activeBorrowings[borrowTo].interestRate - 100);
         
-        bool invFound;
+
+        bool invFound = investments[msg.sender].length > 0 && 
+        investments[msg.sender][investorToActiveInvestment[msg.sender][borrowTo]].paidBack == false &&
+        investments[msg.sender][investorToActiveInvestment[msg.sender][borrowTo]].deleted == false;
+
         // Already invested
-        for (uint i = 0; i < investments[msg.sender].length; i++) {
-            if (investments[msg.sender][i].borrowerAddress == borrowTo && investments[msg.sender][i].paidBack != true) {
-                investments[msg.sender][i].totalAmountLended += investedAmount;
-                investments[msg.sender][i].totalAmountLendedWithInterest += investorRate * investedAmount / 10000;
-                investments[msg.sender][i].monthlyAmount += investorRate * investedAmount / 10000 / activeBorrowings[borrowTo].totalDurationMonths;
-                
-                for (uint j = 0; j < activeBorrowings[borrowTo].investorAddresses.length; j++) {
-                    if (activeBorrowings[borrowTo].investorAddresses[j] == msg.sender) {
-                        activeBorrowings[borrowTo].investorAmounts[j] += investedAmount;
-                    }
-                }
-                
-                invFound = true;
-                break;
-            }
+        if (invFound) {
+            activeBorrowings[borrowTo].investorAmounts[borrowerToActiveInvestor[borrowTo][msg.sender]] += investedAmount;
         }
         // Not yet invested
         if(!invFound) {
@@ -468,9 +451,11 @@ contract Lending {
                 activeBorrowings[borrowTo].totalDurationMonths);
                 
                 investments[msg.sender].push(investment);
+                investorToActiveInvestment[msg.sender][borrowTo] = uint128(investments[msg.sender].length - 1); 
         
                 activeBorrowings[borrowTo].investorAddresses.push(msg.sender);
                 activeBorrowings[borrowTo].investorAmounts.push(investedAmount);
+                borrowerToActiveInvestor[borrowTo][msg.sender] = uint128(activeBorrowings[borrowTo].investorAddresses.length -1);
         }
         activeBorrowings[borrowTo].totalInvestorAmount += investedAmount;
         
@@ -493,17 +478,14 @@ contract Lending {
     returns: bool
     */
     function isWithdrawInvestementPossible(address borrowTo) public view returns (bool) {
-        if (investments[msg.sender].length == 0) {
+        // Frist check if investor has an active investment with borrowTo
+        if (investments[msg.sender].length == 0 ||
+        investments[msg.sender][investorToActiveInvestment[msg.sender][borrowTo]].totalAmountLended == 0 ||
+        investments[msg.sender][investorToActiveInvestment[msg.sender][borrowTo]].paidBack == true || 
+        investments[msg.sender][investorToActiveInvestment[msg.sender][borrowTo]].deleted == true) {
             return false;
         }
-        for (uint i = 0; i < investments[msg.sender].length; i++) {
-            if (investments[msg.sender][i].borrowerAddress == borrowTo && investments[msg.sender][i].paidBack != true) {
-                break;
-            }
-            if (i == investments[msg.sender].length-1 && investments[msg.sender][i].borrowerAddress != borrowTo && investments[msg.sender][i].paidBack != true) {
-                return false;
-            }
-        }
+
         if (activeBorrowings[borrowTo].borrowedAmount == activeBorrowings[borrowTo].totalInvestorAmount && activeBorrowings[borrowTo].paidOut == false &&
         (currentTime - activeBorrowings[borrowTo].fundingCompletedDate)/60/60/24 >= 30) {
             return true;
@@ -521,12 +503,7 @@ contract Lending {
         for(uint i = 0; i < activeBorrowings[borrowTo].investorAddresses.length; i++) {
             addr = payable(activeBorrowings[borrowTo].investorAddresses[i]);
             addr.transfer(activeBorrowings[borrowTo].investorAmounts[i]);
-            for (uint j = 0; j < investments[activeBorrowings[borrowTo].investorAddresses[i]].length; j++) {
-                if (investments[activeBorrowings[borrowTo].investorAddresses[i]][j].borrowerAddress == borrowTo && investments[msg.sender][i].paidBack != true) {
-                    investments[activeBorrowings[borrowTo].investorAddresses[i]][j].deleted = true;
-                    break;
-                } 
-            }
+            investments[activeBorrowings[borrowTo].investorAddresses[i]][investorToActiveInvestment[activeBorrowings[borrowTo].investorAddresses[i]][borrowTo]].deleted = true;
         }
         activeBorrowings[borrowTo].deleted = true;
     }
