@@ -17,7 +17,26 @@ export class BorrowerComponent implements OnInit {
   activeBorrowing: ActiveBorrowing;
 
   constructor(private scService: SmartContractService) {
+    this.scService.borrowingFunded$.subscribe(value => {
+      // debugger;
+      if(value) {
+        window.location.reload();
+        //TODO: try fix
+
+        // this.step = -1;
+        // this.activeBorrowing = null;
+        // this.loading = true;
+        // this.scService.getActiveBorrowing().then(value1 => {
+        //   console.log('loaded');
+        //   this.activeBorrowing = value1;
+        //   this.step = 2;
+        //   this.loading = false;
+        // });
+      }
+    })
   }
+
+
 
   ngOnInit(): void {
     // TODO: Proper network check

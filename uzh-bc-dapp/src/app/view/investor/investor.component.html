@@ -6,8 +6,11 @@
     <div *ngFor="let borrowing of activeBorrowings" class="col-12 col-lg-6">
       <app-borrowing-displayer [borrowing]="borrowing" (invested)="invested()"></app-borrowing-displayer>
     </div>
-    <div *ngIf="activeBorrowings?.length == 0" class="col-12">
+    <div *ngIf="activeBorrowings?.length == 0 && !loadingOpportunities" class="col-12">
       <p>No investment opportunities available</p>
+    </div>
+    <div class="col-12" *ngIf="loadingOpportunities">
+      <mat-spinner class="mt-2 ml-5"></mat-spinner>
     </div>
   </div>
   <div class="row">
@@ -15,10 +18,13 @@
       <h1 class="cc-font">Previous Investments</h1>
     </div>
     <div *ngFor="let inv of investments" class="col-12 col-lg-6">
-      <app-investment-displayer [investment]="inv" ></app-investment-displayer>
+      <app-investment-displayer [investment]="inv" (withdrawn)="investmentWithdrawn()"></app-investment-displayer>
     </div>
-    <div *ngIf="investments?.length == 0" class="col-12">
+    <div *ngIf="investments?.length == 0 && !loadingInvestments" class="col-12">
       <p>No previous investments</p>
+    </div>
+    <div class="col-12" *ngIf="loadingInvestments">
+      <mat-spinner class="mt-2 ml-5"></mat-spinner>
     </div>
   </div>
 </div>

@@ -25,6 +25,11 @@ export class SmartContractService {
   private errorSource = new Subject<string>();
   error$ = this.errorSource.asObservable();
 
+
+  private borrowingFundedSource = new Subject<true>();
+  borrowingFunded$ = this.borrowingFundedSource.asObservable();
+
+
   constructor() {
     this.contractAddress = environment.dapp_address;
     if(localStorage.getItem('sc_addr') != null) {
@@ -245,6 +250,23 @@ export class SmartContractService {
     return result;
   }
 
+  async isWithdrawInvestementPossible(address: string) {
+    await this.createProviderAndWeb3();
+    const result = await this.smartContract
+      .methods.isWithdrawInvestementPossible(address)
+      .call({ from: this.accounts[0]});
+    return result;
+  }
+
+
+  async withdrawInvestment(address: string) {
+    await this.createProviderAndWeb3();
+    const result = await this.smartContract
+      .methods.withdrawInvestment(address)
+      .send({ from: this.accounts[0]});
+    return result;
+  }
+
   async getContractTime() {
     await this.createProviderAndWeb3();
     const time = await this.smartContract
@@ -282,6 +304,16 @@ export class SmartContractService {
         console.log('accountsChanged', accounts);
         this.accounts = accounts;
       });
+
+      this.smartContract.events.BorrowingFunded({ filter: {value: [],},fromBlock: 'latest'}).on('data', event => {
+        console.log('EVENT:');
+        console.log(event);
+        console.log(event.returnValues.borrowerAddress);
+        console.log(event.returnValues.borrowerAddress == this.accounts[0]);
+        if(event.returnValues.borrowerAddress == this.accounts[0]){
+          this.borrowingFundedSource.next(true);
+        }
+      })
 
       this.provider.on("chainChanged", (chainId: number) => {
         console.log('chainChanged', chainId);
