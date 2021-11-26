@@ -19,7 +19,7 @@ export class PaybackComponent implements OnInit {
   payedBackMonthlySuccess: boolean = false;
   fundingRate: number;
   monthlyAmount: number;
-  bn = require('bn.js');
+  loading = false;
   constructor(private scService: SmartContractService) { }
 
   ngOnInit(): void {
@@ -42,20 +42,24 @@ export class PaybackComponent implements OnInit {
 
   payBack() {
     // const s = new BN(this.activeBorrowing.monthlyAmount.toString(), 10);
-    const s = new BN(this.activeBorrowing.monthlyAmount, 10);
+    // const s = new BN(this.activeBorrowing.monthlyAmount, 10);
+    this.loading = true;
     this.scService.packBackBorrower(this.activeBorrowing.monthlyAmount).then(value => {
         this.payedBackMonthlySuccess = value;
         this.scService.getActiveBorrowing().then(value1 => {
           this.activeBorrowing = value1;
           this.initData();
+          this.loading = false;
         })
     });
   }
 
   withdrawMoney() {
+    this.loading = true;
     this.scService.withdrawMoney().then(value => {
       this.scService.getActiveBorrowing().then(value1 => {
         this.activeBorrowing = value1;
+        this.loading = false;
         this.initData();
       })
     })

@@ -13,16 +13,12 @@ export class CommitComponent implements OnInit {
   conditions: BorrowingConditions;
   @Output()
   commited: EventEmitter<boolean> = new EventEmitter<boolean>();
-  constructor(private scService: SmartContractService) { }
+  constructor() { }
 
   ngOnInit(): void {
   }
 
   commit() {
-    this.scService.commitBorrowing().then(value => {
-      this.commited.emit(true);
-    }, () => {
-      this.commited.emit(false);
-    })
+    this.commited.emit(true);
   }
 }

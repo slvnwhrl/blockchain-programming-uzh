@@ -1,7 +1,16 @@
-<div class="container mt-5" style="background-color: #303030">
+<div class="container mt-5" >
   <div class="row" *ngIf="error">
     <div class="col-12">
-      <div>{{error}}</div>
+      <div class="alert alert-custom">
+        <p><strong>Error</strong></p>
+        <p class="mb-0">{{error}}</p></div>
+    </div>
+  </div>
+  <div class="row" *ngIf="warn">
+    <div class="col-12">
+      <div class="alert alert-custom-warn">
+        <p><strong>Warning</strong></p>
+        <p class="mb-0">{{warn}}</p></div>
     </div>
   </div>
   <div class="row" *ngIf="loading">

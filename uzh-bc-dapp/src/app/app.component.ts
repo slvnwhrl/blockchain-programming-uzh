@@ -19,6 +19,7 @@ export class AppComponent implements OnInit{
   contractTimestamp: number;
   currentContractAddress = '';
   scControl: FormControl;
+  loading = false;
   constructor(lib: FaIconLibrary, conf: NgbTooltipConfig, conf2: NgbPopoverConfig, private scService: SmartContractService) {
     lib.addIconPacks(far);
     lib.addIconPacks(fas);
@@ -31,16 +32,17 @@ export class AppComponent implements OnInit{
 
   getContractTime() {
     this.scService.getContractTime().then((value: number) => {
-      console.log(value);
       this.contractTimestamp = value * 1000;
     });
   }
   setContractDate($event: MatDatepickerInputEvent<unknown, unknown | null>, popover: any): void {
     console.log($event.value.valueOf())
     const ts: number = ($event.value.valueOf() as number);
+    this.loading = true;
     this.scService.setContractTime(Math.floor(ts/1000)).then(value => {
       this.getContractTime();
       popover.close();
+      this.loading = false;
       window.location.reload();
     })
   }
@@ -52,8 +54,10 @@ export class AppComponent implements OnInit{
   setContractNow() {
     const currentDate = new Date();
     const ts = Math.floor(currentDate.getTime()/1000);
+    this.loading = true;
     this.scService.setContractTime(ts).then(value => {
       this.getContractTime();
+      this.loading = false;
       window.location.reload();
     })
   }

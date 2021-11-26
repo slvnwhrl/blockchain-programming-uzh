@@ -23,6 +23,7 @@
   <fa-icon [icon]="['fas', 'clock']"  class="mr-1 pointer" ngbTooltip="Set contract time to now" (click)="setContractNow()"></fa-icon>
   <fa-icon [icon]="['fas', 'calendar-alt']"  class="mr-4 pointer" [ngbTooltip]="'Set contract time to specific date'" (click)="p.open()"></fa-icon>
   <div [ngbPopover]="setDatePopover" [autoClose]="false" triggers="manual" #p="ngbPopover" popoverClass="dp-popover" placement="bottom-right"></div>
+  <fa-icon *ngIf="loading" [icon]="['fas', 'spinner']" spin="true" class="mx-1"></fa-icon>
   <span class="mr-1">Internal Contract Date: {{contractTimestamp | date:'dd.MM.yyyy'}}</span>
   <fa-icon [icon]="['fas', 'redo']" (click)="getContractTime()" class="mr-1 pointer" ngbTooltip="Reload contract time"></fa-icon>
 
@@ -34,9 +35,9 @@
   <div>
     <fa-icon [icon]="['fas', 'times']"  class="float-right pointer c-font" (click)="p.close()"></fa-icon>
   </div>
-  <mat-form-field appearance="fill" class="w-100">
+  <mat-form-field appearance="outline" class="w-100">
     <mat-label>Choose a date</mat-label>
-    <input matInput [matDatepicker]="picker" (dateChange)="setContractDate($event, p)">
+    <input matInput class="c-font" [matDatepicker]="picker" (dateChange)="setContractDate($event, p)">
     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
     <mat-datepicker #picker></mat-datepicker>
   </mat-form-field>
@@ -46,9 +47,9 @@
   <div>
     <fa-icon [icon]="['fas', 'times']"  class="float-right pointer c-font" (click)="t.close()"></fa-icon>
   </div>
-  <mat-form-field appearance="fill" class="w-100">
+  <mat-form-field appearance="outline" class="w-100">
     <mat-label>Smart Contract Address</mat-label>
-    <input matInput [formControl]="scControl">
+    <input matInput class="c-font" [formControl]="scControl">
   </mat-form-field>
   <button mat-flat-button color="primary" class="w-100" (click)="saveSCAddress(t)">Set Smart Contract Address</button>
 </ng-template>

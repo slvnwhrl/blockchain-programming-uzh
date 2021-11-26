@@ -21,6 +21,7 @@ export class BorrowingDisplayerComponent implements OnInit {
   risk: number;
   maxInvestment: number;
   investmentAmount: FormControl = new FormControl(0.1);
+  loading = false;
 
   constructor(private scService: SmartContractService) { }
 
@@ -31,8 +32,13 @@ export class BorrowingDisplayerComponent implements OnInit {
   }
 
   invest(): void {
+    this.loading = true;
     this.scService.investMoney(this.borrowing.address, this.investmentAmount.value).then(value => {
       this.invested.emit(true);
+      this.loading = false;
+    }, () => {
+      this.invested.emit(false);
+      this.loading = false;
     })
   }
 }

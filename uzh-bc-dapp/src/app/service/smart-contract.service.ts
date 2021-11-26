@@ -26,8 +26,18 @@ export class SmartContractService {
   error$ = this.errorSource.asObservable();
 
 
-  private borrowingFundedSource = new Subject<true>();
-  borrowingFunded$ = this.borrowingFundedSource.asObservable();
+  private borrowingFundingChangedSource = new Subject<true>();
+  borrowingFundingChanged$ = this.borrowingFundingChangedSource.asObservable();
+
+  private investmentPaybackChangedSource = new Subject<true>();
+  investmentPaybackChanged$ = this.investmentPaybackChangedSource.asObservable();
+
+  private investmentWithdrawnSource = new Subject<true>();
+  investmentWithdrawn$ = this.investmentWithdrawnSource.asObservable();
+
+  private moneyWithdrawnSource = new Subject<true>();
+  moneyWithdrawn$ = this.moneyWithdrawnSource.asObservable();
+
 
 
   constructor() {
@@ -306,12 +316,26 @@ export class SmartContractService {
       });
 
       this.smartContract.events.BorrowingFundingChanged({ filter: {value: [],},fromBlock: 'latest'}).on('data', event => {
-        console.log('EVENT:');
-        console.log(event);
-        console.log(event.returnValues.borrowerAddress);
-        console.log(event.returnValues.borrowerAddress == this.accounts[0]);
         if(event.returnValues.borrowerAddress == this.accounts[0]){
-          this.borrowingFundedSource.next(true);
+          this.borrowingFundingChangedSource.next(true);
+        }
+      });
+
+      this.smartContract.events.InvestmentWithdrawn({ filter: {value: [],},fromBlock: 'latest'}).on('data', event => {
+        if(event.returnValues.borrowerAddress == this.accounts[0]){
+          this.investmentWithdrawnSource.next(true);
+        }
+      });
+
+      this.smartContract.events.MoneyWithdrawn({ filter: {value: [],},fromBlock: 'latest'}).on('data', event => {
+        if(event.returnValues.investorAddresses.includes(this.accounts[0])){
+          this.moneyWithdrawnSource.next(true);
+        }
+      });
+
+      this.smartContract.events.InvestmentPaybackChanged({ filter: {value: [],},fromBlock: 'latest'}).on('data', event => {
+        if(event.returnValues.investorAddresses.includes(this.accounts[0])){
+          this.investmentPaybackChangedSource.next(true);
         }
       })
 

@@ -8,7 +8,7 @@ export const dapp_abi = [
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address",
         "name": "borrowerAddress",
         "type": "address"
@@ -21,7 +21,7 @@ export const dapp_abi = [
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address[]",
         "name": "investorAddresses",
         "type": "address[]"
@@ -34,7 +34,7 @@ export const dapp_abi = [
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address",
         "name": "borrowerAddress",
         "type": "address"
@@ -47,7 +47,7 @@ export const dapp_abi = [
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address[]",
         "name": "investorAddresses",
         "type": "address[]"
