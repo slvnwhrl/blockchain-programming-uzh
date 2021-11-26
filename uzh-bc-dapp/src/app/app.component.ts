@@ -41,6 +41,7 @@ export class AppComponent implements OnInit{
     this.scService.setContractTime(Math.floor(ts/1000)).then(value => {
       this.getContractTime();
       popover.close();
+      window.location.reload();
     })
   }
 
@@ -53,6 +54,7 @@ export class AppComponent implements OnInit{
     const ts = Math.floor(currentDate.getTime()/1000);
     this.scService.setContractTime(ts).then(value => {
       this.getContractTime();
+      window.location.reload();
     })
   }
 

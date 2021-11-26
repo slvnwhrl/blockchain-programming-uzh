@@ -5,6 +5,19 @@ export const dapp_abi = [
     "type": "constructor"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "borrowerAddress",
+        "type": "address"
+      }
+    ],
+    "name": "BorrowingFunded",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "commitBorrowing",
     "outputs": [],
