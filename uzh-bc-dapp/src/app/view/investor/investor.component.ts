@@ -34,7 +34,10 @@ export class InvestorComponent implements OnInit {
         if (Object.is(arr.length - 1, key)) {
           this.loadingOpportunities = false;
         }
-      })
+      });
+      if(value.length == 0){
+        this.loadingOpportunities = false;
+      }
     })
   }
 

@@ -14,7 +14,46 @@ export const dapp_abi = [
         "type": "address"
       }
     ],
-    "name": "BorrowingFunded",
+    "name": "BorrowingFundingChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address[]",
+        "name": "investorAddresses",
+        "type": "address[]"
+      }
+    ],
+    "name": "InvestmentPaybackChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "borrowerAddress",
+        "type": "address"
+      }
+    ],
+    "name": "InvestmentWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address[]",
+        "name": "investorAddresses",
+        "type": "address[]"
+      }
+    ],
+    "name": "MoneyWithdrawn",
     "type": "event"
   },
   {
@@ -498,25 +537,7 @@ export const dapp_abi = [
       }
     ],
     "name": "requestBorrowing",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "monthlyAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "interestRate",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct BorrowingConditions",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
