@@ -305,7 +305,7 @@ export class SmartContractService {
         this.accounts = accounts;
       });
 
-      this.smartContract.events.BorrowingFunded({ filter: {value: [],},fromBlock: 'latest'}).on('data', event => {
+      this.smartContract.events.BorrowingFundingChanged({ filter: {value: [],},fromBlock: 'latest'}).on('data', event => {
         console.log('EVENT:');
         console.log(event);
         console.log(event.returnValues.borrowerAddress);

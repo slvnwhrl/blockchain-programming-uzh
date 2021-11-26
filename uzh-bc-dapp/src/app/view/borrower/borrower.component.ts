@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {SmartContractService} from "../../service/smart-contract.service";
 import {ActiveBorrowing, BorrowingConditions, BorrowingRequest} from "../../model/models";
 
@@ -16,22 +16,24 @@ export class BorrowerComponent implements OnInit {
   borrowingConditions: BorrowingConditions;
   activeBorrowing: ActiveBorrowing;
 
-  constructor(private scService: SmartContractService) {
+  constructor(private scService: SmartContractService, private changeDetector: ChangeDetectorRef) {
     this.scService.borrowingFunded$.subscribe(value => {
       // debugger;
       if(value) {
-        window.location.reload();
+        // window.location.reload();
         //TODO: try fix
 
-        // this.step = -1;
-        // this.activeBorrowing = null;
-        // this.loading = true;
-        // this.scService.getActiveBorrowing().then(value1 => {
-        //   console.log('loaded');
-        //   this.activeBorrowing = value1;
-        //   this.step = 2;
-        //   this.loading = false;
-        // });
+        this.step = -1;
+        this.activeBorrowing = null;
+        this.loading = true;
+        this.changeDetector.detectChanges();
+        this.scService.getActiveBorrowing().then(value1 => {
+          console.log('loaded');
+          this.activeBorrowing = value1;
+          this.step = 2;
+          this.loading = false;
+          this.changeDetector.detectChanges();
+        });
       }
     })
   }
