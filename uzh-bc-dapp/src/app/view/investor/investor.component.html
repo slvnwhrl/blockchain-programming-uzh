@@ -1,10 +1,17 @@
-<div class="container">
+<div class="container mt-5">
+  <div class="row" *ngIf="error">
+    <div class="col-12">
+      <div class="alert alert-custom">
+        <p><strong>Error</strong></p>
+        <p class="mb-0">{{error}}</p></div>
+    </div>
+  </div>
   <div class="row">
     <div class="col-12 mt-4">
       <h1 class="cc-font">Investment Opportunities</h1>
     </div>
     <div *ngFor="let borrowing of activeBorrowings" class="col-12 col-lg-6">
-      <app-borrowing-displayer [borrowing]="borrowing" (invested)="invested()"></app-borrowing-displayer>
+      <app-borrowing-displayer [borrowing]="borrowing" (invested)="invested($event)"></app-borrowing-displayer>
     </div>
     <div *ngIf="activeBorrowings?.length == 0 && !loadingOpportunities" class="col-12">
       <p>No investment opportunities available</p>
@@ -18,7 +25,7 @@
       <h1 class="cc-font">Previous Investments</h1>
     </div>
     <div *ngFor="let inv of investments" class="col-12 col-lg-6">
-      <app-investment-displayer [investment]="inv" (withdrawn)="investmentWithdrawn()"></app-investment-displayer>
+      <app-investment-displayer [investment]="inv" (withdrawn)="investmentWithdrawn($event)"></app-investment-displayer>
     </div>
     <div *ngIf="investments?.length == 0 && !loadingInvestments" class="col-12">
       <p>No previous investments</p>

@@ -16,6 +16,7 @@ export class InvestmentDisplayerComponent implements OnInit {
   risk: number;
   payedBackRate: number
   isWithdrawPossible: boolean;
+  loading = false;
 
   constructor(private scService: SmartContractService) { }
 
@@ -30,8 +31,13 @@ export class InvestmentDisplayerComponent implements OnInit {
   }
 
   withdrawInvestment(): void{
+    this.loading = true;
     this.scService.withdrawInvestment(this.investment.borrowerAddress).then(value => {
       this.withdrawn.emit(true);
+      this.loading = false;
+    }, () => {
+      this.withdrawn.emit(false);
+      this.loading = false;
     })
   }
 

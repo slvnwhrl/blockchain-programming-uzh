@@ -34,7 +34,7 @@
       <div class="col-12">
 
         <button mat-flat-button color="primary" class="float-right"
-                [ngbPopover]="investPopover" [autoClose]="'outside'" triggers="manual" #p="ngbPopover" popoverClass="invest-popover" placement="left" (click)="p.open()" [disabled]="borrowing.totalInvestorAmount == borrowing.borrowedAmount">Invest</button>
+                [ngbPopover]="investPopover" [autoClose]="'outside'" triggers="manual" #p="ngbPopover" popoverClass="invest-popover" placement="left" (click)="p.open()" [disabled]="borrowing.totalInvestorAmount == borrowing.borrowedAmount || loading"><fa-icon *ngIf="loading" [icon]="['fas', 'spinner']" spin="true" class="mr-1"></fa-icon> Invest</button>
       </div>
     </div>
   </div>
@@ -45,6 +45,6 @@
     <mat-slider class="w-100" min="0.1" step="0.05" [max]="maxInvestment" [formControl]="investmentAmount" thumbLabel="true"></mat-slider>
   </div>
   <div class="template-div">
-    <button mat-flat-button (click)="invest()" class="w-100" color="primary">Invest <fa-icon [icon]="['fab', 'ethereum']" class="mx-1"></fa-icon>{{investmentAmount.value}} ETH</button>
+    <button mat-flat-button (click)="invest()" class="w-100" color="primary" [disabled]="loading"><fa-icon *ngIf="loading" [icon]="['fas', 'spinner']" spin="true" class="mr-1"></fa-icon> Invest <fa-icon [icon]="['fab', 'ethereum']" class="mx-1"></fa-icon>{{investmentAmount.value}} ETH</button>
   </div>
 </ng-template>

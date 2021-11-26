@@ -133,7 +133,10 @@ contract Lending {
     */
     uint256 currentTime;
 
-    event BorrowingFunded(address indexed borrowerAddress);
+    event BorrowingFundingChanged(address borrowerAddress);
+    event InvestmentPaybackChanged(address[] investorAddresses);
+    event InvestmentWithdrawn(address borrowerAddress);
+    event MoneyWithdrawn(address[] investorAddresses);
 
     constructor() {
        owner = msg.sender;
@@ -147,9 +150,8 @@ contract Lending {
         uint256 durationMonths: the duration in month the user wants to pay back the borrowed amount
         uint256 income: the income of the user in CHF
         uint256 expenses: the total expenses of the user in CHF
-        returns: borrowing conditions for the request
     */
-    function requestBorrowing(uint256 amount, uint8 durationMonths, uint256 income, uint256 expenses) public returns (BorrowingConditions memory) {
+    function requestBorrowing(uint256 amount, uint8 durationMonths, uint256 income, uint256 expenses) public {
         require(canRequestBorrowing(msg.sender), "Cannot receive funding for more than one active project");
         require(durationMonths <= 120, "Duration cannot be longer than 10 years");
         require(income > expenses, "Income must be bigger than expenses");
@@ -162,7 +164,7 @@ contract Lending {
         
         borrowingRequests[msg.sender] = borrowingRequest;
         
-        return calculateBorrowingConditions();
+        calculateBorrowingConditions();
     }
     
     /*
@@ -175,7 +177,6 @@ contract Lending {
                 return false;
             }
         }
-        
         return true;
     }
     
@@ -290,6 +291,8 @@ contract Lending {
         for (uint i = 0; i < activeBorrowings[msg.sender].investorAddresses.length; i++){
             investments[activeBorrowings[msg.sender].investorAddresses[i]][investorToActiveInvestment[activeBorrowings[msg.sender].investorAddresses[i]][msg.sender]].startDate = currentTime;
         }
+
+        emit MoneyWithdrawn(activeBorrowings[msg.sender].investorAddresses);
         
         // Remove address from activeBorrowingAddresses, since it does not need funding anymore
         for (uint k = 0; k < activeBorrowingAddresses.length; k++) {
@@ -359,6 +362,8 @@ contract Lending {
                 investments[activeBorrowings[msg.sender].investorAddresses[i]][invIndex].paidBack = true;
             }
         }
+
+        emit InvestmentPaybackChanged(activeBorrowings[msg.sender].investorAddresses);
          
         // TODO: Check with months left
         activeBorrowings[msg.sender].amountLeftToRepay -= msg.value;
@@ -461,8 +466,8 @@ contract Lending {
         
         if (activeBorrowings[borrowTo].totalInvestorAmount == activeBorrowings[borrowTo].borrowedAmount) {
             activeBorrowings[borrowTo].fundingCompletedDate = currentTime;
-            emit BorrowingFunded(borrowTo);
         }
+        emit BorrowingFundingChanged(borrowTo);
         
         // Return unused money
         if (investedAmount < msg.value) {
@@ -506,6 +511,16 @@ contract Lending {
             investments[activeBorrowings[borrowTo].investorAddresses[i]][investorToActiveInvestment[activeBorrowings[borrowTo].investorAddresses[i]][borrowTo]].deleted = true;
         }
         activeBorrowings[borrowTo].deleted = true;
+        emit InvestmentWithdrawn(borrowTo);
+        
+        // Remove address from activeBorrowingAddresses, since it does not need funding anymore
+        for (uint k = 0; k < activeBorrowingAddresses.length; k++) {
+            if(activeBorrowingAddresses[k] == borrowTo) {
+                activeBorrowingAddresses[k] = activeBorrowingAddresses[activeBorrowingAddresses.length-1];
+                activeBorrowingAddresses.pop();
+                break;
+            }
+        }
     }
     
     /*

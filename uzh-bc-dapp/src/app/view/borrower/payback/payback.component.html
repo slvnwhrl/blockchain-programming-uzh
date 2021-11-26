@@ -59,7 +59,7 @@
         <button mat-flat-button color="primary" class="float-right" (click)="checkIfPaymentPossible()" *ngIf="!paymentPossible" [disabled]="paymentPossibleChecked">
           {{paymentPossibleChecked ? 'Payment not possible yet' : 'Check if payment possible'}}
         </button>
-        <button mat-flat-button color="primary" class="float-right" (click)="payBack()" *ngIf="paymentPossible && !payedBackMonthlySuccess">Pay Back {{(activeBorrowing.monthlyAmount / 1e18) | number: '.1-3'}} ETH</button>
+        <button mat-flat-button color="primary" class="float-right" (click)="payBack()" *ngIf="paymentPossible && !payedBackMonthlySuccess" [disabled]="loading"><fa-icon *ngIf="loading" [icon]="['fas', 'spinner']" spin="true" class="mr-1"></fa-icon>Pay Back {{(activeBorrowing.monthlyAmount / 1e18) | number: '.1-3'}} ETH</button>
       </div>
       <div class="col-12 pt-2" *ngIf="payedBackMonthlySuccess">
         <p class="text-right text-green">Successfully paid back {{(activeBorrowing.monthlyAmount / 1e18) | number: '.1-3'}} ETH</p>
@@ -72,7 +72,7 @@
     </div>
     <div class="row"  *ngIf="activeBorrowing.fundingCompletedDate != 0 && !activeBorrowing.payedOut">
       <div class="col-12">
-        <button mat-flat-button color="primary" class="float-right" (click)="withdrawMoney()">Withdraw money</button>
+        <button mat-flat-button color="primary" class="float-right" (click)="withdrawMoney()" [disabled]="loading"><fa-icon *ngIf="loading" [icon]="['fas', 'spinner']" spin="true" class="mr-1"></fa-icon>Withdraw money</button>
       </div>
     </div>
   </div>

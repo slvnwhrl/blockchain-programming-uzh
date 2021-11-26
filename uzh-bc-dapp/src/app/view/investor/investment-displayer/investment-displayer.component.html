@@ -57,7 +57,7 @@
   <div class="row" *ngIf="isWithdrawPossible">
     <div class="col-12">
       <p>The borrower has not withdrawn the invested money within a month. You are entitled to withdraw your investment.</p>
-      <button mat-flat-button color="primary" class="float-right" (click)="withdrawInvestment()">Withdraw Invested Money</button>
+      <button mat-flat-button color="primary" class="float-right" (click)="withdrawInvestment()" [disabled]="loading"><fa-icon *ngIf="loading" [icon]="['fas', 'spinner']" spin="true" class="mr-1"></fa-icon>Withdraw Invested Money</button>
     </div>
   </div>
 
