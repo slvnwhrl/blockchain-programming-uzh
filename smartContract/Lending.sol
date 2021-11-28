@@ -200,21 +200,31 @@ contract Lending {
         } else {
             BorrowingRequest memory borrowingRequest = borrowingRequests[msg.sender];
             
-            // Calculate the income difference and scale to wei
-            uint256 incomeDifference = (borrowingRequest.income - borrowingRequest.expenses) * 1e18;
+            // Calculate the net income and scale to wei
+            // We assume an ETH price of CHF 4000 (this would need to be connected to an oracle)
+            uint256 netIncome = 1e18 * (borrowingRequest.income - borrowingRequest.expenses) / 4000;
             
-            // Multiply borrowing amount in ETH with ETH Price in CHF (we assume 4000CHF per ETH, this would need to be connected to an oracle) and divide by duration in months
-            uint256 monthlyPayback = borrowingRequest.amount * 4000 / borrowingRequest.durationMonths;
+            uint256 monthlyPayback = borrowingRequest.amount / borrowingRequest.durationMonths;
             
-            // Multiply with 10000 to get a int number which represents a float with precision of 2. Divide monthly payback by income difference and by 2.
-            uint256 calculatedRate = (10000 * monthlyPayback/incomeDifference/2);
+            // Multiply with 1000 to get a int number which represents a float with precision of 3. Divide income difference by monthly payback.
+            uint256 netIncToDebtRation = (1000 * netIncome/monthlyPayback);
             
-            // Only allow to borrow money when interest rate between 2.5% and 10%
-            require (calculatedRate >= 250 && calculatedRate <= 1000, "Not allowed to borrow money with current parameters");
+            // The income difference must be at least 25% bigger than the monthly payback rate
+            require(netIncToDebtRation >= 1250, "Not allowed to borrow money with current parameters");
+
+            uint256 calculatedRate;
+            // If the income difference is at least 3x bigger than the monthly payback rate, the minimum rate (2%) applies
+            if (netIncToDebtRation >= 3000) {
+                calculatedRate = 200;
+            }
+            // In this case, the rate is calculated linearly depending on the ratio of net income and debt (monthly payback rate)
+            // rate represents a float with precision of 2 (as an integer)
+            else {
+                calculatedRate = (15714186 - 4571*netIncToDebtRation)/10000;
+            }
             
             // Multiply requested amount with 10000 + calculatedRate (fixed precision float) and divide by total duration and by 10000 to get monthly amount in WEI
             uint256 monthlyAmount = (borrowingRequest.amount * (10000 + calculatedRate)) / borrowingRequest.durationMonths / 10000;
-            
             
             BorrowingConditions memory conditions = BorrowingConditions(monthlyAmount, calculatedRate);
             borrowingConditions[msg.sender] = conditions;
