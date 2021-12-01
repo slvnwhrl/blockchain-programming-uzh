@@ -1,16 +1,16 @@
-# UzhBcDapp - Lending and Borrowing
+# UZH Blockchain Seminar - CryptoCredit
 
-# Deploy Smart Contract
+## Deploy Smart Contract
 If you want to use a pre-deployed smart contract on the UZH Ethereum chain, you can connect to the contract found at: `0x290C7723B98B4CeC002786Afc6C875c4134e49F2`.
 
-You can also deploy the smart contract by starting a local ganache environment, and deploy the smart contract using the RemixIDE. 
+You can also deploy the [smart contract](https://github.com/slvnwhrl/blockchain-programming-uzh/blob/main/smartContract/CryptoCredit.sol) by starting a local ganache environment, and deploy the smart contract using the RemixIDE. 
 Copy the address of the deployed smart contract and set it in the webapp directly or using the environment variable as described below.
 
-# Run webapp locally
+## Run webapp locally
 There are two ways on how to run the webapp locally. We recommend the method using docker. You can connect to any
-smart contract containing the lending and borrowing application (e.g. on UZH Ethereum Chain or on local Ganache deployment).
+smart contract containing the CryptoCredit application (e.g. on UZH Ethereum Chain or on local Ganache deployment).
 
-## Using Docker
+### Using Docker
 Requires Docker.
 Some environment parameters are set in advance and cannot be changed using the docker environment,
 since the application has to be precompiled in order to be packaged as docker container. Some of the parameters,
@@ -25,7 +25,7 @@ You can also build a new docker image with the required environment variables. T
 To do so, set the parameters in `src/environments/environment.prod.ts` and run  `npm install` followed by `npm run build`.
 Once the build is completed, you can run `docker build -t noahcha/bcuzh .` which creates a new docker image. You can run the image using `docker run -d -p 80:80 noahcha/bcuzh`. 
 
-## Using Dev Server
+### Using Dev Server
 Requires npm. 
 If you are using this method, you can set all parameters in the `src/environments/environment.ts` file. You can set the smart contract 
 address in this file or also use the method provided in the webapp. In order to get rid of the warning message displayed when connected to the
