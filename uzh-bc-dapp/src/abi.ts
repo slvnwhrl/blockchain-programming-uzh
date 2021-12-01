@@ -463,7 +463,7 @@ export const dapp_abi = [
         "type": "address"
       }
     ],
-    "name": "isWithdrawInvestementPossible",
+    "name": "isWithdrawInvestmentPossible",
     "outputs": [
       {
         "internalType": "bool",
