@@ -24,6 +24,8 @@ export class BorrowerComponent implements OnInit {
    * */
   constructor(private scService: SmartContractService, private changeDetector: ChangeDetectorRef) {
     this.scService.borrowingFundingChanged$.subscribe(value => {
+      console.log('here');
+      console.log(value);
       if (value) {
         this.step = -1;
         this.activeBorrowing = null;
@@ -38,6 +40,8 @@ export class BorrowerComponent implements OnInit {
       }
     });
     this.scService.investmentWithdrawn$.subscribe(value => {
+      console.log('here2');
+      console.log(value);
       if (value) {
         this.step = -1;
         this.activeBorrowing = null;
@@ -133,7 +137,9 @@ export class BorrowerComponent implements OnInit {
     this.loading = true;
     this.scService.requestBorrowing($event.amount, $event.durationMonths, $event.income, $event.expenses).then(value => {
       this.warn = '';
+      this.error = '';
       this.scService.getBorrowingConditions().then(value1 => {
+        this.error = '';
         this.borrowingConditions = value1;
         this.step = 1;
         this.loading = false;
@@ -145,7 +151,7 @@ export class BorrowerComponent implements OnInit {
     }, (err) => {
       console.log(err)
       if (err?.message.includes('Not allowed to borrow money with current parameters')) {
-        this.error = 'You cannot borrow money with the parameters provided. Either the borrowing amount is to large, or the income-expense difference to low.';
+        this.error = 'You cannot borrow money with the parameters provided. Either the borrowing amount is to large, or the income-expense difference is to low.';
       } else {
         this.error = 'Something went wrong with requesting a quote. Please try again or contact customer service!';
       }
@@ -162,6 +168,7 @@ export class BorrowerComponent implements OnInit {
     this.loading = true;
     this.scService.commitBorrowing().then(value => {
       this.loading = false;
+      this.error = '';
       this.checkStep();
     }, () => {
       this.error = 'Something went wrong with committing. Please try again or contact customer service!';

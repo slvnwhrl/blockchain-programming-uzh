@@ -121,7 +121,7 @@ contract CryptoCredit{
     mapping(address => BorrowingConditions) borrowingConditions;
     mapping(address => ActiveBorrowing) activeBorrowings;
     mapping(address => Investment[]) investments;
-    // Mapping from investor to index of an investement from a specific borrower in investments mapping
+    // Mapping from investor to index of an investment from a specific borrower in investments mapping
     mapping(address => mapping(address => uint128)) investorToActiveInvestment;
     // Mapping from a borrower to a specific investor address in investorAddresses (in ActiveBorrowing struct)
     mapping(address => mapping(address => uint128)) borrowerToActiveInvestor;
@@ -208,7 +208,7 @@ contract CryptoCredit{
             
             // Multiply with 1000 to get a int number which represents a float with precision of 3. Divide income difference by monthly payback.
             uint256 netIncToDebtRation = (1000 * netIncome/monthlyPayback);
-            
+
             // The income difference must be at least 25% bigger than the monthly payback rate
             require(netIncToDebtRation >= 1250, "Not allowed to borrow money with current parameters");
 
@@ -290,8 +290,6 @@ contract CryptoCredit{
         require (activeBorrowings[msg.sender].borrowedAmount == activeBorrowings[msg.sender].totalInvestorAmount && !activeBorrowings[msg.sender].paidOut, "Not allowed to withdraw money");
         require (address(this).balance >= activeBorrowings[msg.sender].borrowedAmount, "Not enough liquidity");
         address payable addr = payable(msg.sender);
-        
-        // TOOD: GAS ATTACK check
         
         activeBorrowings[msg.sender].paidOut = true;
         activeBorrowings[msg.sender].withdrawalDate = currentTime;
@@ -492,7 +490,7 @@ contract CryptoCredit{
     Allows a user to check if investment in funded (but not paid out) project can be withdrawn.
     returns: bool
     */
-    function isWithdrawInvestementPossible(address borrowTo) public view returns (bool) {
+    function isWithdrawInvestmentPossible(address borrowTo) public view returns (bool) {
         // Frist check if investor has an active investment with borrowTo
         if (investments[msg.sender].length == 0 ||
         investments[msg.sender][investorToActiveInvestment[msg.sender][borrowTo]].totalAmountLended == 0 ||
@@ -512,7 +510,7 @@ contract CryptoCredit{
     Withdraw investment from a funded (but not paid out) project. All investors will receive their investment back.
     */
     function withdrawInvestment(address borrowTo) public {
-        require(isWithdrawInvestementPossible(borrowTo), "Investment can only be withdrawn, if a borrower doesn't withdraw money from a fully funded project for at least 30 days.");
+        require(isWithdrawInvestmentPossible(borrowTo), "Investment can only be withdrawn, if a borrower doesn't withdraw money from a fully funded project for at least 30 days.");
         
         address payable addr;
         for(uint i = 0; i < activeBorrowings[borrowTo].investorAddresses.length; i++) {
