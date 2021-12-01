@@ -311,7 +311,7 @@ export class SmartContractService {
   async isWithdrawInvestmentPossible(address: string) {
     await this.createProviderAndWeb3();
     const result = await this.smartContract
-      .methods.isWithdrawInvestementPossible(address)
+      .methods.isWithdrawInvestmentPossible(address)
       .call({ from: this.accounts[0]});
     return result;
   }
