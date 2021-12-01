@@ -12,13 +12,17 @@ export class CommitComponent implements OnInit {
   @Input()
   conditions: BorrowingConditions;
   @Output()
-  commited: EventEmitter<boolean> = new EventEmitter<boolean>();
+  committed: EventEmitter<boolean> = new EventEmitter<boolean>();
+
   constructor() { }
 
   ngOnInit(): void {
   }
 
+  /**
+   * Commit to borrowing. Emit event to parent
+   */
   commit() {
-    this.commited.emit(true);
+    this.committed.emit(true);
   }
 }

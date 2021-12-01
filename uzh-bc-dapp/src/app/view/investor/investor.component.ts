@@ -14,6 +14,12 @@ export class InvestorComponent implements OnInit {
   activeBorrowings: ActiveBorrowing[] = [];
   investments: Investment[] = [];
   error: string = '';
+  warn: string = '';
+
+  /**
+   * Construct the Investor Component. Subscribe to smart contract events.
+   * @param scService Reference to the Smart Contract Service
+   */
   constructor(private scService: SmartContractService) {
     this.scService.borrowingFundingChanged$.subscribe(value => {
       if (value) {
@@ -35,13 +41,25 @@ export class InvestorComponent implements OnInit {
         this.loadInvestmentData();
       }
     });
+    this.scService.error$.subscribe(value => {
+      this.error = value;
+    });
+    this.scService.warn$.subscribe(value => {
+      this.warn = value;
+    });
   }
 
+  /**
+   * Init the component. Load data.
+   */
   ngOnInit(): void {
     this.loadOpportunitiesData();
     this.loadInvestmentData();
   }
 
+  /**
+   * Load investment opportunities. (=Active borrowings that are not fully funded, not deleted, and not from the same account)
+   */
   loadOpportunitiesData(): void {
     this.loadingOpportunities = true;
     this.activeBorrowings = [];
@@ -69,6 +87,9 @@ export class InvestorComponent implements OnInit {
     })
   }
 
+  /**
+   * Load active and previous investments.
+   */
   loadInvestmentData(): void {
     this.loadingInvestments = true;
     this.investments = [];
@@ -81,6 +102,10 @@ export class InvestorComponent implements OnInit {
     })
   }
 
+  /**
+   * Callback when the user has invested. Reloads the data.
+   * @param $event whether investment was successful
+   */
   invested($event: boolean): void {
     if($event){
       this.loadOpportunitiesData();
@@ -90,6 +115,10 @@ export class InvestorComponent implements OnInit {
     }
   }
 
+  /**
+   * Callback when the user has withdrawn the investment. Reloads the investment data.
+   * @param $event whether withdrawal was successful
+   */
   investmentWithdrawn($event: boolean): void {
     if($event){
       this.loadInvestmentData();

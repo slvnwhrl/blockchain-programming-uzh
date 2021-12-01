@@ -20,12 +20,23 @@ export class PaybackComponent implements OnInit {
   fundingRate: number;
   monthlyAmount: number;
   loading = false;
+
+  /**
+   * Construct the Payback Component
+   * @param scService Reference to the Smart Contract Service
+   */
   constructor(private scService: SmartContractService) { }
 
+  /**
+   * Load data
+   */
   ngOnInit(): void {
     this.initData();
   }
 
+  /**
+   * Calculate funding rate, payed-back rate, total with interest and monthly amount
+   */
   initData(): void {
     this.monthlyAmount = parseInt(this.activeBorrowing.monthlyAmount);
     this.totalWithInterest = this.activeBorrowing.totalInvestorAmount * ((100 + this.activeBorrowing.interestRate / 100) / 100);
@@ -33,6 +44,9 @@ export class PaybackComponent implements OnInit {
     this.fundingRate = this.activeBorrowing.totalInvestorAmount / this.activeBorrowing.borrowedAmount * 100;
   }
 
+  /**
+   * Check if payment of monthly amount is possible
+   */
   checkIfPaymentPossible() {
     this.scService.isPayBackPossible().then(value => {
       this.paymentPossible = value;
@@ -40,9 +54,10 @@ export class PaybackComponent implements OnInit {
     });
   }
 
+  /**
+   * Pay back money to investors and reload data
+   */
   payBack() {
-    // const s = new BN(this.activeBorrowing.monthlyAmount.toString(), 10);
-    // const s = new BN(this.activeBorrowing.monthlyAmount, 10);
     this.loading = true;
     this.scService.packBackBorrower(this.activeBorrowing.monthlyAmount).then(value => {
         this.payedBackMonthlySuccess = value;
@@ -50,10 +65,13 @@ export class PaybackComponent implements OnInit {
           this.activeBorrowing = value1;
           this.initData();
           this.loading = false;
-        })
+        });
     });
   }
 
+  /**
+   * Withdraw initial money from borrowing
+   */
   withdrawMoney() {
     this.loading = true;
     this.scService.withdrawMoney().then(value => {
@@ -61,8 +79,7 @@ export class PaybackComponent implements OnInit {
         this.activeBorrowing = value1;
         this.loading = false;
         this.initData();
-      })
-    })
-
+      });
+    });
   }
 }

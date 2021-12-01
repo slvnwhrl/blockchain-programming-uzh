@@ -6,6 +6,13 @@
         <p class="mb-0">{{error}}</p></div>
     </div>
   </div>
+  <div class="row" *ngIf="warn">
+    <div class="col-12">
+      <div class="alert alert-custom">
+        <p><strong>Warning</strong></p>
+        <p class="mb-0">{{warn}}</p></div>
+    </div>
+  </div>
   <div class="row">
     <div class="col-12 mt-4">
       <h1 class="cc-font">Investment Opportunities</h1>

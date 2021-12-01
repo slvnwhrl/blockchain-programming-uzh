@@ -23,14 +23,24 @@ export class BorrowingDisplayerComponent implements OnInit {
   investmentAmount: FormControl = new FormControl(0.1);
   loading = false;
 
+  /**
+   * Construct the Borrowing Displayer Component
+   * @param scService Reference to the Smart Contract Service
+   */
   constructor(private scService: SmartContractService) { }
 
+  /**
+   * Init component. Calculate funding rate, max investment and risk
+   */
   ngOnInit(): void {
     this.fundingRate = this.borrowing.totalInvestorAmount / this.borrowing.borrowedAmount * 100;
     this.maxInvestment = (this.borrowing.borrowedAmount - this.borrowing.totalInvestorAmount) / 1e18;
-    this.risk = (100/(10-2.5))*((this.borrowing.interestRate/100)-2.5)
+    this.risk = (100/(9-1))*((this.borrowing.interestRate/100)-1)
   }
 
+  /**
+   * Invest money and emit event to parent component
+   */
   invest(): void {
     this.loading = true;
     this.scService.investMoney(this.borrowing.address, this.investmentAmount.value).then(value => {

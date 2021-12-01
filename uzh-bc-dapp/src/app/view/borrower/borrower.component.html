@@ -25,7 +25,7 @@
   </div>
   <div class="row" *ngIf="isConnected && !loading && step == 1">
     <div class="col-12">
-      <app-commit [conditions]="borrowingConditions" (commited)="committed($event)"></app-commit>
+      <app-commit [conditions]="borrowingConditions" (committed)="committed($event)"></app-commit>
     </div>
   </div>
   <div class="row" *ngIf="isConnected && !loading && step == 2">

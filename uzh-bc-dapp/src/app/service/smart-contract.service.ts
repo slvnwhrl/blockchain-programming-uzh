@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 
 import Web3 from "web3";
 import Web3Modal from "web3modal";
-import {Subject} from 'rxjs';
+import {Observable, of, Subject} from 'rxjs';
 
 import {dapp_abi} from '../../abi'
 import {ActiveBorrowing, BorrowingConditions, BorrowingRequest, Investment} from "../model/models";
@@ -20,11 +20,11 @@ export class SmartContractService {
   chainId: any;
   contractAddress: string;
 
-  // private accountStatusSource = new Subject<any>();
-  // accountStatus$ = this.accountStatusSource.asObservable();
   private errorSource = new Subject<string>();
   error$ = this.errorSource.asObservable();
 
+  private warnSource = new Subject<string>();
+  warn$ = this.warnSource.asObservable();
 
   private borrowingFundingChangedSource = new Subject<true>();
   borrowingFundingChanged$ = this.borrowingFundingChangedSource.asObservable();
@@ -38,8 +38,9 @@ export class SmartContractService {
   private moneyWithdrawnSource = new Subject<true>();
   moneyWithdrawn$ = this.moneyWithdrawnSource.asObservable();
 
-
-
+  /**
+   * Construct Smart contract service. Load contract address from environment and store locally. Initialize wallet provider.
+   */
   constructor() {
     this.contractAddress = environment.dapp_address;
     if(localStorage.getItem('sc_addr') != null) {
@@ -65,38 +66,48 @@ export class SmartContractService {
     });
   }
 
+  /**
+   * Connect to wallet provider
+   */
   async connectAccount() {
     this.web3Modal.clearCachedProvider();
-    // this.provider = await this.web3Modal.connect(); // set provider
-    // this.web3js = new Web3(this.provider); // create web3 instance
     await this.createProviderAndWeb3();
-    // this.accountStatusSource.next(this.accounts);
-
-
   }
 
+  /**
+   * get current contract address
+   */
   getContractAddress(): string{
     return this.contractAddress;
   }
 
-  setContractAddress(address: string): boolean{
+  /**
+   * Set contract address and validate
+   * @param address new contract address
+   */
+  setContractAddress(address: string): Promise<boolean> {
     this.contractAddress = address;
     localStorage.setItem('sc_addr', this.contractAddress);
     try {
       this.smartContract = new this.web3js.eth.Contract(dapp_abi, this.contractAddress);
-      return true;
+      return new Promise<boolean>(resolve => {
+        this.getContractTime().then(value => {
+          resolve(true);
+        }, () => {
+          resolve(false);
+        })
+      });
+
     } catch (e) {
-        return false;
+      return new Promise<boolean>(resolve => {
+        resolve(false);
+      })
     }
   }
 
-  getBalance(walletAddress: string): number {
-    if(this.isConnected()){
-      return this.web3js.eth.getBalance(walletAddress);
-    }
-    return 0;
-  }
-
+  /**
+   * Check if user is connected
+   */
   isConnected(): boolean {
     if (this.accounts?.length > 0){
       return true
@@ -105,39 +116,46 @@ export class SmartContractService {
     }
   }
 
+  /**
+   * Request a borrowing
+   * @param amount amount in wei
+   * @param durationMonths duration
+   * @param income user income
+   * @param expenses user expenses
+   */
   async requestBorrowing(amount: number, durationMonths: number, income: number, expenses: number) {
     await this.createProviderAndWeb3();
-    // this.accounts = await this.web3js.eth.getAccounts();
-
-    // this.smartContract = new this.web3js.eth.Contract(dapp_abi, environment.dapp_address);
     const request = await this.smartContract
       .methods.requestBorrowing(amount.toString(), durationMonths, income, expenses)
       .send({ from: this.accounts[0] });
     return new BorrowingConditions(request[0], request[1]);
   }
 
+  /**
+   * Get current borrowing request of connected user
+   */
   async getBorrowingRequest() {
     await this.createProviderAndWeb3();
-    // this.accounts = await this.web3js.eth.getAccounts();
-
-    // this.smartContract = new this.web3js.eth.Contract(dapp_abi, environment.dapp_address);
     const create = await this.smartContract
       .methods.getBorrowingRequest()
       .call({ from: this.accounts[0] });
     return new BorrowingRequest(parseInt(create[0]), parseInt(create[1]), parseInt(create[2]), parseInt(create[3]));
   }
 
+  /**
+   * Get current borrowing request of connected user
+   */
   async getBorrowingConditions() {
     await this.createProviderAndWeb3();
-    // this.accounts = await this.web3js.eth.getAccounts();
-
-    // this.smartContract = new this.web3js.eth.Contract(dapp_abi, environment.dapp_address);
     const request = await this.smartContract
       .methods.getBorrowingConditions()
       .call({ from: this.accounts[0] });
     return new BorrowingConditions(request[0], request[1]);
   }
 
+  /**
+   * Get list of all active borrowings
+   */
   async getActiveBorrowingAddresses() {
     await this.createProviderAndWeb3();
     const addresses = await this.smartContract
@@ -146,6 +164,9 @@ export class SmartContractService {
     return addresses;
   }
 
+  /**
+   * Get active borrowing of connected user
+   */
   async getActiveBorrowing() {
     await this.createProviderAndWeb3();
     const borrowing = await this.smartContract
@@ -171,6 +192,10 @@ export class SmartContractService {
     return ab;
   }
 
+  /**
+   * Get active borrowing of certain user
+   * @param address user address
+   */
   async getActiveBorrowingByAddress(address: string) {
     await this.createProviderAndWeb3();
     const borrowing = await this.smartContract
@@ -197,6 +222,9 @@ export class SmartContractService {
     return ab;
   }
 
+  /**
+   * Get investments of connected user
+   */
   async getInvestments() {
     await this.createProviderAndWeb3();
     const res = await this.smartContract
@@ -223,26 +251,39 @@ export class SmartContractService {
    return investments;
   }
 
+  /**
+   * Commit to borrowing
+   */
   async commitBorrowing() {
     await this.createProviderAndWeb3();
     const res = await this.smartContract.methods.commitBorrowing().send({ from: this.accounts[0] });
     return res;
   }
 
+  /**
+   * Check if payback is possible
+   */
   async isPayBackPossible() {
     await this.createProviderAndWeb3();
     const res = await this.smartContract.methods.isPayBackPossible().call({ from: this.accounts[0] });
     return res;
   }
 
+  /**
+   * Pay back money to investors
+   * @param amount amount in wei
+   */
   async packBackBorrower(amount: string) {
     await this.createProviderAndWeb3();
     const res = await this.smartContract.methods.packBackBorrower().send({ from: this.accounts[0],  value: amount });
     return res;
   }
 
-
-
+  /**
+   * Invest money as investor
+   * @param address address of user to invest in
+   * @param value amount in eth
+   */
   async investMoney(address: string, value: number) {
     await this.createProviderAndWeb3();
     const updatedValue = value * 1e18;
@@ -252,6 +293,9 @@ export class SmartContractService {
     return result;
   }
 
+  /**
+   * Withdraw money after project is funded
+   */
   async withdrawMoney() {
     await this.createProviderAndWeb3();
     const result = await this.smartContract
@@ -260,7 +304,11 @@ export class SmartContractService {
     return result;
   }
 
-  async isWithdrawInvestementPossible(address: string) {
+  /**
+   * Check if withdrawing the investment is possible
+   * @param address address of user
+   */
+  async isWithdrawInvestmentPossible(address: string) {
     await this.createProviderAndWeb3();
     const result = await this.smartContract
       .methods.isWithdrawInvestementPossible(address)
@@ -268,7 +316,10 @@ export class SmartContractService {
     return result;
   }
 
-
+  /**
+   * Withdraw investment
+   * @param address address of user
+   */
   async withdrawInvestment(address: string) {
     await this.createProviderAndWeb3();
     const result = await this.smartContract
@@ -277,6 +328,9 @@ export class SmartContractService {
     return result;
   }
 
+  /**
+   * Get contract time
+   */
   async getContractTime() {
     await this.createProviderAndWeb3();
     const time = await this.smartContract
@@ -285,6 +339,10 @@ export class SmartContractService {
     return time;
   }
 
+  /**
+   * Set contract time
+   * @param timestamp new time
+   */
   async setContractTime(timestamp: number) {
     await this.createProviderAndWeb3();
     const time = await this.smartContract
@@ -293,11 +351,16 @@ export class SmartContractService {
     return time;
   }
 
+  /**
+   * get connected account
+   */
   getConnectedAccount(): string{
     return this.accounts[0];
   }
 
-
+  /**
+   * Connect to wallet provider and initialize smart contract. Subscribe to major events.
+   */
   private async createProviderAndWeb3() {
     if(!this.provider || ! this.web3js || !this.accounts || !this.smartContract) {
       this.provider = await this.web3Modal.connect();
@@ -305,9 +368,9 @@ export class SmartContractService {
       this.accounts = await this.web3js.eth.getAccounts();
       this.chainId = await this.web3js.eth.getChainId();
       if(this.chainId !== environment.chainId) {
-        this.errorSource.next('You are connected to the wrong chain! Please change to UZH Ethereum Chain.');
+        this.warnSource.next('You are connected to the wrong chain! Please change to UZH Ethereum Chain.');
       }else {
-        this.errorSource.next('');
+        this.warnSource.next('');
       }
       this.smartContract = new this.web3js.eth.Contract(dapp_abi, this.contractAddress);
       this.provider.on("accountsChanged", (accounts: string[]) => {
@@ -343,11 +406,9 @@ export class SmartContractService {
         console.log('chainChanged', chainId);
         this.chainId = parseInt(chainId.toString(), 16)
         if(this.chainId != environment.chainId) {
-          console.log('here');
-          this.errorSource.next('You are connected to the wrong chain! Please change to UZH Ethereum Chain.');
+          this.warnSource.next('You are connected to the wrong chain! Please change to UZH Ethereum Chain.');
         } else {
-          console.log('here2');
-          this.errorSource.next('');
+          this.warnSource.next('');
         }
       });
 
