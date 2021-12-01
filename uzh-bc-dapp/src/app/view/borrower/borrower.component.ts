@@ -17,6 +17,11 @@ export class BorrowerComponent implements OnInit {
   borrowingConditions: BorrowingConditions;
   activeBorrowing: ActiveBorrowing;
 
+  /**
+   * Construct the Borrowing Component. Subscribe to smart contract events
+   * @param scService Reference to the Smart Contract Service
+   * @param changeDetector Reference to the change detector
+   * */
   constructor(private scService: SmartContractService, private changeDetector: ChangeDetectorRef) {
     this.scService.borrowingFundingChanged$.subscribe(value => {
       if (value) {
@@ -41,17 +46,22 @@ export class BorrowerComponent implements OnInit {
         this.changeDetector.detectChanges();
       }
     });
-  }
-
-
-  ngOnInit(): void {
-    // TODO: Proper network check
     this.scService.error$.subscribe(value => {
       this.error = value;
       if (value == '') {
         this.checkStep();
       }
-    })
+    });
+    this.scService.warn$.subscribe(value => {
+      this.warn = value;
+    });
+  }
+
+
+  /**
+   * Init component. Check if account is connected.
+   */
+  ngOnInit(): void {
     if (!this.scService.isConnected()) {
       this.scService.connectAccount().then(value => {
         this.isConnected = true
@@ -64,6 +74,9 @@ export class BorrowerComponent implements OnInit {
 
   }
 
+  /**
+   * Checks in which borrowing step the user is currently at. Load according data and display according components
+   */
   checkStep(): void {
     this.loading = true;
     this.scService.getActiveBorrowing().then(value => {
@@ -72,7 +85,7 @@ export class BorrowerComponent implements OnInit {
         this.activeBorrowing = value;
         this.loading = false
       } else if (value.fundingCompletedDate > 0 && value.deleted == true) {
-        this.warn = 'Investors have withdrawn their money from your last request, since you did not withdraw the money within a month.';
+        this.warn += ' Investors have withdrawn their money from your last request, since you did not withdraw the money within a month.';
         this.step = 0;
         this.loading = false;
       }
@@ -103,12 +116,19 @@ export class BorrowerComponent implements OnInit {
 
   }
 
+  /**
+   * Connect to wallet provider manually
+   */
   connectManually() {
     this.scService.connectAccount().then(value => {
       this.isConnected = true
     });
   }
 
+  /**
+   * Callback when requesting a borrowing. Requests Borrowing and calculates borrowing conditions.
+   * @param $event BorrowingRequest Data from the user
+   */
   requestQuote($event: BorrowingRequest) {
     this.loading = true;
     this.scService.requestBorrowing($event.amount, $event.durationMonths, $event.income, $event.expenses).then(value => {
@@ -134,6 +154,10 @@ export class BorrowerComponent implements OnInit {
     });
   }
 
+  /**
+   * Callback when user committed to the borrowing.
+   * @param $event whether commitment was successful
+   */
   committed($event: boolean) {
     this.loading = true;
     this.scService.commitBorrowing().then(value => {
@@ -146,6 +170,9 @@ export class BorrowerComponent implements OnInit {
     });
   }
 
+  /**
+   * Reset the component
+   */
   reset(): void {
     this.step = -1;
     this.activeBorrowing = null;

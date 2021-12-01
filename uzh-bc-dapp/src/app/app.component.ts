@@ -15,11 +15,18 @@ import {FormControl} from "@angular/forms";
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit{
-  title = 'uzh-bc-dapp';
   contractTimestamp: number;
   currentContractAddress = '';
   scControl: FormControl;
   loading = false;
+
+  /**
+   * Construct the App main component
+   * @param lib icons library
+   * @param conf tooltip config
+   * @param conf2 popover config
+   * @param scService smart contract service
+   */
   constructor(lib: FaIconLibrary, conf: NgbTooltipConfig, conf2: NgbPopoverConfig, private scService: SmartContractService) {
     lib.addIconPacks(far);
     lib.addIconPacks(fas);
@@ -30,13 +37,19 @@ export class AppComponent implements OnInit{
     this.scControl = new FormControl(this.currentContractAddress);
   }
 
+  /**
+   * Load the time set in the smart contract
+   */
   getContractTime() {
     this.scService.getContractTime().then((value: number) => {
       this.contractTimestamp = value * 1000;
     });
   }
+
+  /**
+   * Set the time of the smart contract to a specific date
+   */
   setContractDate($event: MatDatepickerInputEvent<unknown, unknown | null>, popover: any): void {
-    console.log($event.value.valueOf())
     const ts: number = ($event.value.valueOf() as number);
     this.loading = true;
     this.scService.setContractTime(Math.floor(ts/1000)).then(value => {
@@ -47,10 +60,16 @@ export class AppComponent implements OnInit{
     })
   }
 
+  /**
+   * Init the component. Load contract time.
+   */
   ngOnInit(): void {
     this.getContractTime();
   }
 
+  /**
+   * Set the time of the smart contract to now
+   */
   setContractNow() {
     const currentDate = new Date();
     const ts = Math.floor(currentDate.getTime()/1000);
@@ -62,16 +81,20 @@ export class AppComponent implements OnInit{
     })
   }
 
-  saveSCAddress(popover: any): void {
-    const res = this.scService.setContractAddress(this.scControl.value);
-    if (res){
-      this.currentContractAddress = this.scService.getContractAddress();
-      popover.close();
-      window.location.reload();
-    }else {
-      this.scControl.setValue('invalid');
-      this.currentContractAddress = 'invalid';
-    }
 
+  /**
+   * Set a new smart contract address
+   */
+  setSmartContractAddress(popover: any): void {
+    this.scService.setContractAddress(this.scControl.value).then(value => {
+      if (value){
+        this.currentContractAddress = this.scService.getContractAddress();
+        popover.close();
+        window.location.reload();
+      }else {
+        this.scControl.setValue('invalid');
+        this.currentContractAddress = 'invalid';
+      }
+    });
   }
 }

@@ -1,27 +1,34 @@
-# UzhBcDapp
+# UzhBcDapp - Lending and Borrowing
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.2.1.
+# Deploy Smart Contract
+If you want to use a pre-deployed smart contract on the UZH Ethereum chain, you can connect to the contract found at: `0x290C7723B98B4CeC002786Afc6C875c4134e49F2`.
 
-## Development server
+You can also deploy the smart contract by starting a local ganache environment, and deploy the smart contract using the RemixIDE. 
+Copy the address of the deployed smart contract and set it in the webapp directly or using the environment variable as described below.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+# Run webapp locally
+There are two ways on how to run the webapp locally. We recommend the method using docker. You can connect to any
+smart contract containing the lending and borrowing application (e.g. on UZH Ethereum Chain or on local Ganache deployment).
 
-## Code scaffolding
+## Using Docker
+Requires Docker.
+Some environment parameters are set in advance and cannot be changed using the docker environment,
+since the application has to be precompiled in order to be packaged as docker container. Some of the parameters,
+namely the address of the smart contract, can be changed directly in the webapp. The chain ID, which identifies the correct network, 
+cannot be set in the webapp. If you are connected to the wrong network, a warning is shown. As long as you provide a valid smart contract address,
+you can fully utilize the webapp, even though you are on another network. This is useful for testing purposes, e.g. if you want to 
+use the application with ganache, to have shorter transaction times.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Run `docker-compose up -d` from the webapp root folder. Navigate to `http://localhost` or `http://localhost:80` in order to access the webapp.
 
-## Build
+You can also build a new docker image with the required environment variables. This requires npm.
+To do so, set the parameters in `src/environments/environment.prod.ts` and run  `npm install` followed by `npm run build`.
+Once the build is completed, you can run `docker build -t noahcha/bcuzh .` which creates a new docker image. You can run the image using `docker run -d -p 80:80 noahcha/bcuzh`. 
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## Using Dev Server
+Requires npm. 
+If you are using this method, you can set all parameters in the `src/environments/environment.ts` file. You can set the smart contract 
+address in this file or also use the method provided in the webapp. In order to get rid of the warning message displayed when connected to the
+wrong network, you can set the chain ID in the environment file. The application auto-reloads.
 
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Run `npm install` followed by `npm run start` from the webapp root folder. Navigate to `http://localhost:4200/` in order to access the webapp.

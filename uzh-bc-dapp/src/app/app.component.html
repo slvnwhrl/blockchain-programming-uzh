@@ -6,9 +6,6 @@
 
   <div class="collapse navbar-collapse" id="navbarToggler">
     <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-<!--      <li class="nav-item active">-->
-<!--        <a class="nav-link" href="#">Home</a>-->
-<!--      </li>-->
       <li class="nav-item">
         <a class="nav-link" [routerLink]="['borrow']">Borrow</a>
       </li>
@@ -51,5 +48,5 @@
     <mat-label>Smart Contract Address</mat-label>
     <input matInput class="c-font" [formControl]="scControl">
   </mat-form-field>
-  <button mat-flat-button color="primary" class="w-100" (click)="saveSCAddress(t)">Set Smart Contract Address</button>
+  <button mat-flat-button color="primary" class="w-100" (click)="setSmartContractAddress(t)">Set Smart Contract Address</button>
 </ng-template>

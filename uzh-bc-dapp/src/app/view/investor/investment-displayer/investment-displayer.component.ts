@@ -18,18 +18,26 @@ export class InvestmentDisplayerComponent implements OnInit {
   isWithdrawPossible: boolean;
   loading = false;
 
+  /**
+   * Construct the Investor Displayer Component
+   * @param scService Reference to the Smart Contract Service
+   */
   constructor(private scService: SmartContractService) { }
 
+  /**
+   * Init the component. Calculate risk and payed-back rate.
+   */
   ngOnInit(): void {
-    this.risk = (100/(10-2.5))*((this.investment.interestRate/100)+1-2.5);
+    this.risk = (100/(9-1))*((this.investment.interestRate/100)+1-1);
     this.payedBackRate = (1 - (this.investment.totalAmountLendedWithInterest - this.investment.amountPayedBack)/(this.investment.totalAmountLendedWithInterest))*100;
-    console.log(this.investment);
-    this.scService.isWithdrawInvestementPossible(this.investment.borrowerAddress).then(value => {
-      console.log(value);
+    this.scService.isWithdrawInvestmentPossible(this.investment.borrowerAddress).then(value => {
       this.isWithdrawPossible = value;
     })
   }
 
+  /**
+   * Withdraw Investment and emit event to parent component
+   */
   withdrawInvestment(): void{
     this.loading = true;
     this.scService.withdrawInvestment(this.investment.borrowerAddress).then(value => {

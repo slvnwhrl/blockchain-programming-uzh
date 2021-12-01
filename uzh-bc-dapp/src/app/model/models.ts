@@ -138,7 +138,6 @@ export class Investment{
   // Total duration of repayment in months
   totalDurationMonths: number;
 
-
   constructor(borrowerAddress: string, totalAmountLended: number, totalAmountLendedWithInterest: number, monthlyAmount: number, interestRate: number, amountPayedBack: number, durationMonthsLeft: number, deleted: boolean, payedBack: boolean, startDate: number, mostRecentRepaymentDate: number, totalDurationMonths: number) {
     this.borrowerAddress = borrowerAddress;
     this.totalAmountLended = totalAmountLended;

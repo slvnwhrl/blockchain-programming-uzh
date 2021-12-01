@@ -14,6 +14,11 @@ export class RequestComponent implements OnInit {
   ethChf: number;
   @Output()
   quoteRequested: EventEmitter<BorrowingRequest> = new EventEmitter<BorrowingRequest>();
+
+  /**
+   * Construct the Request Component. Create request form.
+   * @param fb FormBuilder to create reactive Forms
+   */
   constructor(private fb: FormBuilder) {
     this.requestForm = this.fb.group({
         amount: [0.1, Validators.required],
@@ -29,9 +34,11 @@ export class RequestComponent implements OnInit {
   }
 
   ngOnInit(): void {
-
   }
 
+  /**
+   * Requesting a quote and emit event to parent component
+   */
   requestQuote(): void {
     const request = new BorrowingRequest(
       this.requestForm.get('amount')?.value * 1e18,
