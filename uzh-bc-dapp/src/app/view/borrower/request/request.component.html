@@ -16,15 +16,17 @@
     <div class="col-6">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>Income (per month)</mat-label>
-        <input matInput placeholder="5'000" [mask]="'separator.2'" thousandSeparator="'" class="text-right" formControlName="income">
+        <input matInput placeholder="5'000" [mask]="'separator.2'" thousandSeparator="'" class="text-right" formControlName="income" [errorStateMatcher]="expenseIncomeErrorStateMatcher">
         <span matSuffix class="suffix-fix ml-1">CHF</span>
+        <mat-error>Income must be higher than expenses.</mat-error>
       </mat-form-field>
     </div>
     <div class="col-6">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>Expenses (per month)</mat-label>
-        <input matInput placeholder="2'000" [mask]="'separator.2'" thousandSeparator="'" class="text-right" formControlName="expenses">
+        <input matInput placeholder="2'000" [mask]="'separator.2'" thousandSeparator="'" class="text-right" formControlName="expenses" [errorStateMatcher]="expenseIncomeErrorStateMatcher">
         <span matSuffix class="suffix-fix ml-1">CHF</span>
+        <mat-error>Income must be higher than expenses.</mat-error>
       </mat-form-field>
     </div>
     <div class="col-6">

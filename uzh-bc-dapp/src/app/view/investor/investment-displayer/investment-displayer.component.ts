@@ -30,9 +30,12 @@ export class InvestmentDisplayerComponent implements OnInit {
   ngOnInit(): void {
     this.risk = (100/(9-1))*((this.investment.interestRate/100)+1-1);
     this.payedBackRate = (1 - (this.investment.totalAmountLendedWithInterest - this.investment.amountPayedBack)/(this.investment.totalAmountLendedWithInterest))*100;
-    this.scService.isWithdrawInvestmentPossible(this.investment.borrowerAddress).then(value => {
-      this.isWithdrawPossible = value;
-    })
+    if(!this.investment.payedBack){
+      this.scService.isWithdrawInvestmentPossible(this.investment.borrowerAddress).then(value => {
+        this.isWithdrawPossible = value;
+      });
+    }
+
   }
 
   /**

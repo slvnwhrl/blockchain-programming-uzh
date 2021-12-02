@@ -390,7 +390,7 @@ export class SmartContractService {
         }
       });
 
-      this.smartContract.events.MoneyWithdrawn({ filter: {value: [],},fromBlock: 'latest'}).on('data', event => {
+      this.smartContract.events.MoneyWithdrawn({ filter: {value: [],},fromBlock:  'latest'}).on('data', event => {
         if(event.returnValues.investorAddresses.includes(this.accounts[0])){
           this.moneyWithdrawnSource.next(true);
         }
@@ -420,6 +420,14 @@ export class SmartContractService {
         console.log('disconnect', error);
       });
     }
+  }
+
+  /**
+   * Emit Error to components
+   * @param msg error msg
+   */
+  emitError(msg: string): void {
+    this.errorSource.next(msg);
   }
 
 }

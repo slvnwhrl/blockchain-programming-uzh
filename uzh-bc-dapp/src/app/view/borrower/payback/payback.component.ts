@@ -64,8 +64,12 @@ export class PaybackComponent implements OnInit {
         this.scService.getActiveBorrowing().then(value1 => {
           this.activeBorrowing = value1;
           this.initData();
+          this.scService.emitError('');
           this.loading = false;
         });
+    }, () => {
+      this.scService.emitError('Payback aborted or not successful.');
+      this.loading = false;
     });
   }
 
@@ -79,7 +83,11 @@ export class PaybackComponent implements OnInit {
         this.activeBorrowing = value1;
         this.loading = false;
         this.initData();
+        this.scService.emitError('');
       });
+    }, () => {
+      this.loading = false;
+      this.scService.emitError('Withdrawal aborted or not successful.');
     });
   }
 }
