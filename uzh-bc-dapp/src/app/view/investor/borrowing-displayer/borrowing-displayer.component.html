@@ -1,17 +1,17 @@
 <div class="w-100 border p-3 mb-2">
   <div class="container">
     <div class="row mb-2">
-      <div class="col-4">
+      <div class="col-6 col-sm-4">
         <div class="text-right w-100 inv-label"><span>Yield</span></div>
         <div class="text-right w-100 inv-value c-primary">{{(borrowing.interestRate / 100) - 1| number: '.2-2'}}%</div>
       </div>
-      <div class="col-4">
+      <div class="col-6 col-sm-4">
         <div class="text-right w-100 inv-label"><span>Total Amount</span></div>
         <div class="text-right w-100 inv-value">
           <span class="eth-span">ETH</span>
           <fa-icon [icon]="['fab', 'ethereum']" class="eth-icon"></fa-icon><span [ngbTooltip]="(borrowing.borrowedAmount / 1e18).toString() + ' ETH'">{{(borrowing.borrowedAmount / 1e18 | number: '.1-3')}}</span></div>
       </div>
-      <div class="col-4">
+      <div class="col-6 col-sm-4">
         <div class="text-right w-100 inv-label"><span>Duration (months)</span></div>
         <div class="text-right w-100 inv-value">{{(borrowing.totalDurationMonths)}}</div>
       </div>

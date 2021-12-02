@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {SmartContractService} from "../../service/smart-contract.service";
 import {ActiveBorrowing, Investment} from "../../model/models";
 
@@ -23,22 +23,22 @@ export class InvestorComponent implements OnInit {
   constructor(private scService: SmartContractService) {
     this.scService.borrowingFundingChanged$.subscribe(value => {
       if (value) {
-        this.loadOpportunitiesData();
+        window.location.reload();
       }
     });
     this.scService.investmentPaybackChanged$.subscribe(value => {
       if (value) {
-        this.loadInvestmentData();
+        window.location.reload();
       }
     });
     this.scService.moneyWithdrawn$.subscribe(value => {
       if (value) {
-        this.loadInvestmentData();
+        window.location.reload();
       }
     });
     this.scService.investmentWithdrawn$.subscribe(value => {
       if (value) {
-        this.loadInvestmentData();
+        window.location.reload();
       }
     });
     this.scService.error$.subscribe(value => {
@@ -94,7 +94,8 @@ export class InvestorComponent implements OnInit {
     this.loadingInvestments = true;
     this.investments = [];
     this.scService.getInvestments().then(value => {
-      this.investments = value.filter(value1 => value1.deleted == false);
+      const inv = value.filter(value1 => value1.deleted == false);
+      this.investments = inv.reverse();
       this.loadingInvestments = false;
     }, () => {
       this.error = 'Could not load investments. Please try again or contact customer service!';
@@ -121,7 +122,7 @@ export class InvestorComponent implements OnInit {
    */
   investmentWithdrawn($event: boolean): void {
     if($event){
-      this.loadInvestmentData();
+      window.location.reload();
     }else {
       this.error = 'Could not withdraw money. Please try again or contact customer service!';
     }

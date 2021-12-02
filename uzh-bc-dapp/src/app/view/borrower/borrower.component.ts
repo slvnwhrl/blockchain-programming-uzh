@@ -24,30 +24,13 @@ export class BorrowerComponent implements OnInit {
    * */
   constructor(private scService: SmartContractService, private changeDetector: ChangeDetectorRef) {
     this.scService.borrowingFundingChanged$.subscribe(value => {
-      console.log('here');
-      console.log(value);
-      if (value) {
-        this.step = -1;
-        this.activeBorrowing = null;
-        this.loading = true;
-        this.changeDetector.detectChanges();
-        this.scService.getActiveBorrowing().then(value1 => {
-          this.activeBorrowing = value1;
-          this.step = 2;
-          this.loading = false;
-          this.changeDetector.detectChanges();
-        });
+      if(value){
+        window.location.reload();
       }
     });
     this.scService.investmentWithdrawn$.subscribe(value => {
-      console.log('here2');
-      console.log(value);
-      if (value) {
-        this.step = -1;
-        this.activeBorrowing = null;
-        this.changeDetector.detectChanges();
-        this.checkStep();
-        this.changeDetector.detectChanges();
+      if(value){
+        window.location.reload();
       }
     });
     this.scService.error$.subscribe(value => {

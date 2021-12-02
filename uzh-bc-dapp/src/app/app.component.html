@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <a class="navbar-brand cc-font" [routerLink]="['/']" >CryptoCredit</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+  <button class="navbar-toggler float-right" type="button" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
 
@@ -15,15 +15,16 @@
     </ul>
   </div>
 
-  <fa-icon [icon]="['fas', 'file-contract']"  class="mr-3 pointer" ngbTooltip="Set contract address" (click)="t.open()"></fa-icon>
-  <div [ngbPopover]="setSCAddress" [autoClose]="false" triggers="manual" #t="ngbPopover" popoverClass="dp-popover" placement="bottom-right"></div>
-  <fa-icon [icon]="['fas', 'clock']"  class="mr-1 pointer" ngbTooltip="Set contract time to now" (click)="setContractNow()"></fa-icon>
-  <fa-icon [icon]="['fas', 'calendar-alt']"  class="mr-4 pointer" [ngbTooltip]="'Set contract time to specific date'" (click)="p.open()"></fa-icon>
-  <div [ngbPopover]="setDatePopover" [autoClose]="false" triggers="manual" #p="ngbPopover" popoverClass="dp-popover" placement="bottom-right"></div>
-  <fa-icon *ngIf="loading" [icon]="['fas', 'spinner']" spin="true" class="mx-1"></fa-icon>
-  <span class="mr-1">Internal Contract Date: {{contractTimestamp | date:'dd.MM.yyyy'}}</span>
-  <fa-icon [icon]="['fas', 'redo']" (click)="getContractTime()" class="mr-1 pointer" ngbTooltip="Reload contract time"></fa-icon>
-
+  <div class="w-md-100">
+    <fa-icon [icon]="['fas', 'file-contract']"  class="mr-3 pointer" ngbTooltip="Set contract address" (click)="t.open()"></fa-icon>
+    <span [ngbPopover]="setSCAddress" [autoClose]="false" triggers="manual" #t="ngbPopover" popoverClass="dp-popover" placement="bottom-right"></span>
+    <fa-icon [icon]="['fas', 'clock']"  class="mr-1 pointer" ngbTooltip="Set contract time to now" (click)="setContractNow()"></fa-icon>
+    <fa-icon [icon]="['fas', 'calendar-alt']"  class="mr-4 pointer" [ngbTooltip]="'Set contract time to specific date'" (click)="p.open()"></fa-icon>
+    <span [ngbPopover]="setDatePopover" [autoClose]="false" triggers="manual" #p="ngbPopover" popoverClass="dp-popover" placement="bottom-right"></span>
+    <fa-icon *ngIf="loading" [icon]="['fas', 'spinner']" spin="true" class="mx-1"></fa-icon>
+    <span class="mr-1">Internal Contract Date: {{contractTimestamp | date:'dd.MM.yyyy'}}</span>
+    <fa-icon [icon]="['fas', 'redo']" (click)="getContractTime()" class="mr-1 pointer" ngbTooltip="Reload contract time"></fa-icon>
+  </div>
 
 </nav>
 <router-outlet></router-outlet>

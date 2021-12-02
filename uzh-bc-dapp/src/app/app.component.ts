@@ -57,6 +57,8 @@ export class AppComponent implements OnInit{
       popover.close();
       this.loading = false;
       window.location.reload();
+    }, () => {
+      this.loading = false;
     })
   }
 
@@ -78,7 +80,9 @@ export class AppComponent implements OnInit{
       this.getContractTime();
       this.loading = false;
       window.location.reload();
-    })
+    }, () => {
+      this.loading = false;
+    });
   }
 
 

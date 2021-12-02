@@ -37,7 +37,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; background-
 .c-font{
   color: lightgray !important;
 }
-.dp-popover .arrow::after {
+.dp-popover .arrow::after, .dp-popover .arrow::before  {
   border-bottom-color: transparent !important;
 }
 
@@ -89,4 +89,10 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; background-
   border: 1px solid #db7b04;
   border-radius: 0px;
   background-color: rgba(219, 123, 4, 0.35);
+}
+
+@media screen and (max-width: 450px) {
+  .inv-value{
+   font-size: 25px !important;
+  }
 }
