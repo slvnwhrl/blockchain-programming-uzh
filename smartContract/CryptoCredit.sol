@@ -113,6 +113,7 @@ struct Investment{
     uint8 totalDurationMonths;
 }
 
+/// @title A smart contract that allows users to borrow and lend ETH
 contract CryptoCredit{
     
     address owner;
@@ -133,24 +134,25 @@ contract CryptoCredit{
     */
     uint256 currentTime;
 
+    /// @notice Event that emits address of a borrower when funding of respective credit has changed.
     event BorrowingFundingChanged(address borrowerAddress);
+    /// @notice Event that emits address of investor that have received money after borrower payback.
     event InvestmentPaybackChanged(address[] investorAddresses);
+    /// @notice Event that emits address of the owner of a credit from which investment has been withdrawn.
     event InvestmentWithdrawn(address borrowerAddress);
+    /// @notice Event that emits address of investors of a credit after borrower has withdrawn money.
     event MoneyWithdrawn(address[] investorAddresses);
 
     constructor() {
        owner = msg.sender;
        currentTime = block.timestamp;
     }
-    
-    
-    /* 
-        Allows any user to request the borrowing of ETH. The request data is stored in a mapping to the users address.
-        uint256 amount: amount in WEI the user wants to borrow
-        uint256 durationMonths: the duration in month the user wants to pay back the borrowed amount
-        uint256 income: the income of the user in CHF
-        uint256 expenses: the total expenses of the user in CHF
-    */
+
+    /// @notice Allows any user to request the borrowing of ETH. The request data is stored in a mapping to the users address.
+    /// @param amount amount in WEI the user wants to borrow
+    /// @param durationMonths the duration in month the user wants to pay back the borrowed amount
+    /// @param income the income of the user in CHF
+    /// @param expenses the total expenses of the user in CHF
     function requestBorrowing(uint256 amount, uint8 durationMonths, uint256 income, uint256 expenses) public {
         require(canRequestBorrowing(msg.sender), "Cannot receive funding for more than one active project");
         require(durationMonths <= 120, "Duration cannot be longer than 10 years");
@@ -166,11 +168,9 @@ contract CryptoCredit{
         
         calculateBorrowingConditions();
     }
-    
-    /*
-    Allows to check if a user can request a borrowing. Can only request a borrowing if there are no open borrowings.
-    returns: bool
-    */
+
+    /// @notice Allows to check if a user can request a borrowing. Can only request a borrowing if there are no open borrowings.
+    /// @return a bool
     function canRequestBorrowing(address borrowTo) private view returns (bool) {
         if (activeBorrowings[borrowTo].borrowedAmount > 0) {
             if (activeBorrowings[borrowTo].deleted == false && (activeBorrowings[borrowTo].paidOut == false || activeBorrowings[borrowTo].amountLeftToRepay > 0)) {
@@ -179,19 +179,15 @@ contract CryptoCredit{
         }
         return true;
     }
-    
-    /*
-        Returns the current borrowing request of the user
-        returns: borrowing request
-    */
+
+    /// @notice Returns the current borrowing request of the user
+    /// @return a BorrowingRequest struct
     function getBorrowingRequest() public view returns (BorrowingRequest memory)  {
         return borrowingRequests[msg.sender];
     }
-    
-    /*
-        Calculates borrowing conditions based on borrowing request of the user
-        returns: borrowing conditions
-    */
+
+    /// @notice Calculates borrowing conditions based on borrowing request of the user
+    /// @return a BorrowingConditions struct
     function calculateBorrowingConditions() private returns (BorrowingConditions memory) {
         require (borrowingRequests[msg.sender].amount > 0, "No open borrowing request");
         
@@ -231,21 +227,15 @@ contract CryptoCredit{
             return borrowingConditions[msg.sender];
         }
      }
-    
-    
-    
-    /*
-        Returns borrowing conditions of a user
-        returns: borrowing conditions
-    */
+
+    /// @notice Get the borrowing conditions of the sender
+    /// @return a BorrowingConditions struct
     function getBorrowingConditions() public view returns (BorrowingConditions memory)  {
         require (borrowingConditions[msg.sender].monthlyAmount > 0, "No calculated borrowing conditions");
         return borrowingConditions[msg.sender];
     }
-    
-    /*
-        Commit the borrowing conditions, so investors can fund the request
-    */
+
+    /// @notice Commit the borrowing conditions, so investors can fund the request.
     function commitBorrowing() public {
         require (borrowingRequests[msg.sender].amount > 0, "No open borrowing request");
         require (borrowingConditions[msg.sender].monthlyAmount > 0, "No calculated borrowing conditions");
@@ -282,10 +272,8 @@ contract CryptoCredit{
         borrowingConditions[msg.sender].monthlyAmount = 0;
         borrowingConditions[msg.sender].interestRate = 0;
     }
-    
-    /*
-        Allows user to withdraw the requested money if the project is already funded and not paid out yet.
-    */
+
+    /// @notice Allows a user to withdraw the requested money if the project is already funded and not paid out yet.
     function withdrawMoney() public {
         require (activeBorrowings[msg.sender].borrowedAmount == activeBorrowings[msg.sender].totalInvestorAmount && !activeBorrowings[msg.sender].paidOut, "Not allowed to withdraw money");
         require (address(this).balance >= activeBorrowings[msg.sender].borrowedAmount, "Not enough liquidity");
@@ -311,11 +299,9 @@ contract CryptoCredit{
             }
         }
     }
-    
-    /*
-        Allows the user to check wheter withdrawal of money is possible
-        returns: wheter withdrawal of money is possible
-    */
+
+    /// @notice Allows a user to check whether withdrawal of money is possible.
+    /// @return a bool
     function isWithdrawMoneyPossible() public view returns (bool){
         require (activeBorrowings[msg.sender].borrowedAmount > 0 && !activeBorrowings[msg.sender].paidOut , "No active borrowing agreement");
         if (activeBorrowings[msg.sender].borrowedAmount == activeBorrowings[msg.sender].totalInvestorAmount) {
@@ -324,11 +310,9 @@ contract CryptoCredit{
             return false;
         }
     }
-    
-   /*
-        Allows the user to check wheter paying back debt is possible
-        returns: wheter paying back is possible
-    */
+
+    /// @notice Allows a user to check whether paying back debt is possible.
+    /// @return a bool
     function isPayBackPossible() public view returns (bool){
         require (activeBorrowings[msg.sender].borrowedAmount > 0 && activeBorrowings[msg.sender].paidOut , "No active borrowing agreement");
         require (activeBorrowings[msg.sender].amountLeftToRepay > 0 || !activeBorrowings[msg.sender].paidBack , "Already paid back");
@@ -346,11 +330,9 @@ contract CryptoCredit{
             return false;
         }
     }
-    
-    /*
-        Allows the owner of the contract to provide additional liquidity
-        returns: providing liquidity successful or not
-    */
+
+    /// @notice Allows a a user who has borrowed money to pay back the monthly rate.
+    /// @return success a bool indicating whether payback was successfull
     function packBackBorrower() payable public returns (bool success){
         require (isPayBackPossible(), "Payback not possible");
         require (msg.value == activeBorrowings[msg.sender].monthlyAmount, "Not the correct amount to pay back");
@@ -383,46 +365,35 @@ contract CryptoCredit{
         }
         return true;
     }
-    
-    /*
-        Allows user to retrieve active borrowing conditions
-        returns: active borrowing conditions
-    */
+
+    /// @notice Allows a user to retrieve the borrowing conditions of an active credit.
+    /// @return an ActiveBorrowing struct
     function getActiveBorrowing() public view returns (ActiveBorrowing memory)  {
         return activeBorrowings[msg.sender];
     }
-    
-    /*
-        Allows user to retrieve active borrowing addresses
-        returns: list of active borrowing addresses
-    */
+
+    /// @notice  Allows a user to retrieve then addresses of all users with an active credit.
+    /// @return list of active addresses
     function getActiveBorrowingAddresses() public view returns (address[] memory)  {
         return activeBorrowingAddresses;
     }
-    
-    /*
-        Allows user to retrieve investments
-        returns: list of investments
-    */
+
+    /// @notice Allows a user to retrieve her previous and active investments.
+    /// @return list of investments
     function getInvestments() public view returns (Investment[] memory)  {
         return investments[msg.sender];
     }
-    
-    
-    /*
-        Allows user to retrieve active borrowing conditions by address
-        address borrowingAddress: address of the borrower 
-        returns: active borrowing conditions
-    */
+
+    /// @notice Allows a user to retrieve active borrowing conditions by address.
+    /// @param borrowingAddress address of the borrower
+    /// @return an ActiveBorrowing struct
     function getActiveLendingByAddress(address borrowingAddress) public view returns (ActiveBorrowing memory)  {
         return activeBorrowings[borrowingAddress];
     }
-    
-    /*
-        Allows user to lend money to another user
-        address borrowTo: address to lend money to
-        returns: wheter lending wa successful
-    */
+
+    /// @notice Allows a user to lend money to another user.
+    /// @param  borrowTo address to lend money to
+    /// @return success bool indicating whether lending wa successful
     function investMoney(address borrowTo) payable public returns (bool success){
          // Make sure investment is not too small and not too big
          require(msg.value > 0, "No investment provided");
@@ -485,11 +456,9 @@ contract CryptoCredit{
         
         return true;
     }
-    
-    /*
-    Allows a user to check if investment in funded (but not paid out) project can be withdrawn.
-    returns: bool
-    */
+
+    /// @notice Allows a user to check if investment in funded (but not paid out) project can be withdrawn.
+    /// @return a bool
     function isWithdrawInvestmentPossible(address borrowTo) public view returns (bool) {
         // Frist check if investor has an active investment with borrowTo
         if (investments[msg.sender].length == 0 ||
@@ -505,10 +474,9 @@ contract CryptoCredit{
         }
         return false;
     }
-    
-    /*
-    Withdraw investment from a funded (but not paid out) project. All investors will receive their investment back.
-    */
+
+    /// @notice Withdraw investment from a funded (but not paid out) project. All investors will receive their investment back.
+    /// @param borrowTo address where the money was lended to
     function withdrawInvestment(address borrowTo) public {
         require(isWithdrawInvestmentPossible(borrowTo), "Investment can only be withdrawn, if a borrower doesn't withdraw money from a fully funded project for at least 30 days.");
         
@@ -530,37 +498,27 @@ contract CryptoCredit{
             }
         }
     }
-    
-    /*
-        Allows the owner of the contract to provide additional liquidity
-        returns: providing liquidity successful or not
-    */
+
+    /// @notice Allows to provide additional liquidity to the contract
+    /// @return success a bool
     function provideLiquidityToContract() payable public returns (bool success){
         return true;
     }
-    
-    /*
-        Returns the current contract liquidity
-        returns: contract liquidity
-    */
+
+    /// @notice Returns the current contract liquidity.
+    /// @return the contract liquidity in Wei
     function getContractLiquidity() public view returns (uint256)  {
         return address(this).balance;
     }
-    
-    /*
-        Returns contract internal time
-        returns: timestamp
-    */
+
+    /// @notice Get the contract's internal time
+    /// @return timestamp
     function getContractTime() public view returns (uint256)  {
         return currentTime;
     }
-    
-    /*
-        set contract internal time (only for testing purposes)
-        returns: timestamp
-    */
+
+    /// @notice Sets the contract's internal time (only for testing purposes)
     function setContractTime(uint256 timestamp) public  {
         currentTime = timestamp;
     }
-    
 }
