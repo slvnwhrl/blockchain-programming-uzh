@@ -1,6 +1,17 @@
 # UZH Blockchain Seminar - CryptoCredit
 
-This folder contains the code for the smart contract that is used in this project. Functions and events in the contract are documented using the recommended [NatSpec](https://docs.soliditylang.org/en/v0.8.10/natspec-format.html) format. For an overview of all available public functions have a look at the source code or check the list below. 
+This folder contains the code for the smart contract that is used in this project. Have a look at this README for instructions on how to deploy the contract and for an overview of all publicly available functions (or have a look at the source code). Note that functions and events in the contract are documented using the recommended [NatSpec](https://docs.soliditylang.org/en/v0.8.10/natspec-format.html) format.
+
+## Deploy Smart Contract
+### UZH Ethereum Chain
+If you want to use a pre-deployed smart contract on the UZH Ethereum chain, you can connect to the contract found at: `0x290C7723B98B4CeC002786Afc6C875c4134e49F2`.
+
+### Local Environment
+You can also deploy the smart contract by starting a local [Ganache](https://www.trufflesuite.com/ganache/) environment and deploy the smart contract using the [Remix IDE](https://remix.ethereum.org/). 
+
+### Use in DApp
+If you want to use a deployed contract in connection with our front end, copy the address of the deployed smart contract and set it in the webapp directly or using the environment variable as described [here](https://github.com/slvnwhrl/blockchain-programming-uzh/tree/main/uzh-bc-dapp#using-dev-server).
+
 
 ## ABI Overview
 
