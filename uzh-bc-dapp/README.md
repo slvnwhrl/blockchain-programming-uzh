@@ -1,6 +1,6 @@
 # UZH Blockchain Seminar - CryptoCredit
 
-## Run webapp locally
+## Run Webapp Locally
 There are two ways on how to run the webapp locally. We recommend the method using docker. You can connect to any
 smart contract containing the CryptoCredit application (e.g. on UZH Ethereum Chain or on local Ganache deployment).
 
