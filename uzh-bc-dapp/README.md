@@ -1,11 +1,5 @@
 # UZH Blockchain Seminar - CryptoCredit
 
-## Deploy Smart Contract
-If you want to use a pre-deployed smart contract on the UZH Ethereum chain, you can connect to the contract found at: `0x290C7723B98B4CeC002786Afc6C875c4134e49F2`.
-
-You can also deploy the [smart contract](https://github.com/slvnwhrl/blockchain-programming-uzh/blob/main/smartContract/CryptoCredit.sol) by starting a local ganache environment, and deploy the smart contract using the RemixIDE. 
-Copy the address of the deployed smart contract and set it in the webapp directly or using the environment variable as described below.
-
 ## Run webapp locally
 There are two ways on how to run the webapp locally. We recommend the method using docker. You can connect to any
 smart contract containing the CryptoCredit application (e.g. on UZH Ethereum Chain or on local Ganache deployment).
