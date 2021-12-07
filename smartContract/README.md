@@ -4,7 +4,7 @@ This folder contains the code for the smart contract that is used in this projec
 
 ## Deploy Smart Contract
 ### UZH Ethereum Chain
-If you want to use a pre-deployed smart contract on the UZH Ethereum chain, you can connect to the contract found at: `0x290C7723B98B4CeC002786Afc6C875c4134e49F2`.
+If you want to use a pre-deployed smart contract on the UZH Ethereum chain, you can connect to the contract found at: `0x3b85ddAA6096906AD8bdB6BCf36D51e89DF0A5b6`.
 
 ### Local Environment
 You can also deploy the smart contract by starting a local [Ganache](https://www.trufflesuite.com/ganache/) environment and deploy the smart contract using the [Remix IDE](https://remix.ethereum.org/). 
